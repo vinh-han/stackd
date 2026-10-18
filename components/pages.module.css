@@ -1,0 +1,424 @@
+/* Dashboard, Add cards and Deck pages. Same tokens and type as the review screen. */
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.page {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: calc(16px + env(safe-area-inset-top)) 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+@media (min-width: 900px) {
+  .page {
+    padding: 44px 40px 64px;
+    gap: 32px;
+  }
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbarBrand {
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.topbarBack {
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+
+.topbarBack:hover {
+  color: var(--text);
+}
+
+.grow {
+  flex: 1;
+}
+
+.h1 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+@media (min-width: 900px) {
+  .h1 {
+    font-size: 34px;
+  }
+}
+
+.titleInput {
+  width: 100%;
+  padding: 2px 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+}
+
+.titleInput:hover,
+.titleInput:focus {
+  outline: none;
+  border-bottom-color: var(--border);
+}
+
+.lede {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.sectionLabel {
+  margin: 0 0 12px;
+  font: 400 10.5px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+
+/* ---------- Tiles ---------- */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.tile {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.tileValue {
+  font: 500 22px var(--font-mono), monospace;
+  color: var(--text);
+}
+
+.tileLabel {
+  margin-top: 4px;
+  font: 400 10.5px var(--font-mono), monospace;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.tileNote {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* ---------- Deck cards ---------- */
+
+.deckList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 12px;
+}
+
+.deckCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+}
+
+.deckHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.deckTitle {
+  min-width: 0;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deckTitle:hover {
+  text-decoration: underline;
+}
+
+.deckMeta {
+  flex: none;
+  font: 400 12px var(--font-mono), monospace;
+  color: var(--text-muted);
+}
+
+.topicRows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.topicRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 38px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.topicName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topicPct {
+  text-align: right;
+  font: 400 12px var(--font-mono), monospace;
+  color: var(--text-muted);
+}
+
+.deckFoot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.small {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.muted {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ---------- Forms ---------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+
+.pasteArea {
+  min-height: 240px;
+  font-size: 15px;
+}
+
+.formFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.counter {
+  font: 400 11.5px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+.counterOver {
+  color: oklch(0.70 0.13 25);
+}
+
+.notice {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.notice code {
+  font: 400 12.5px var(--font-mono), monospace;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.noticeError {
+  border-color: oklch(0.55 0.12 25 / 0.6);
+}
+
+/* ---------- Progress ---------- */
+
+.progressBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.progressText {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.progressTrack {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--track-2);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--fill);
+  transition: width 200ms ease-out;
+}
+
+/* ---------- Card lists ---------- */
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.cardItem {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardFront {
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.cardBack {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.cardMeta {
+  margin-top: 2px;
+  font: 400 10.5px var(--font-mono), monospace;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.cardActions {
+  flex: none;
+  display: flex;
+  gap: 6px;
+}
+
+.listHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.listHead .sectionLabel {
+  margin: 0;
+}
+
+.search {
+  max-width: 240px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+/* ---------- Empty state ---------- */
+
+.hero {
+  padding: 8vh 0 0;
+}
+
+@media (min-width: 900px) {
+  .hero {
+    padding-top: 14vh;
+  }
+}
+
+.heroTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+@media (min-width: 900px) {
+  .heroTitle {
+    font-size: 44px;
+  }
+}
+
+.danger {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}

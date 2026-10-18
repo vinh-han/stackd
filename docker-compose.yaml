@@ -1,0 +1,71 @@
+# One machine, several services. Supabase stays hosted; everything here talks to it over the network.
+#
+# Local: docker compose up --build             -> http://localhost:3000
+# Production: DOMAIN=stackd.example.com docker compose --profile prod up -d --build
+# (Caddy terminates HTTPS with an automatic Let's Encrypt certificate.)
+#
+# web: Next.js frontend. Its /api/* routes proxy to `api`.
+# api: Python backend (chunking, card generation; Docling PDF ingestion goes here).
+#      It talks to the outside only through its own API, so it can move to its own machine later.
+
+services:
+  web:
+    build: .
+    image: stackd-web
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      # Bound to localhost only: in production, traffic comes in through Caddy.
+      - "127.0.0.1:3000:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  api:
+    build: ./backend
+    image: stackd-api
+    restart: unless-stopped
+    # Secrets come in at runtime, never baked into an image (.dockerignore excludes .env*).
+    env_file:
+      - path: .env.local
+        required: false
+    # Not published: only `web` reaches it, over the compose network.
+    expose:
+      - "8000"
+    deploy:
+      resources:
+        limits:
+          # Headroom for Docling's layout models once PDF ingestion lands.
+          memory: 2g
+
+  caddy:
+    image: caddy:2.10-alpine
+    profiles: [prod]
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      # Your public hostname. "localhost" gets a self-signed certificate, for testing the proxy locally.
+      DOMAIN: ${DOMAIN:-localhost}
+      # Required: the site has no accounts yet, so a login protects the Gemini key. Unset,
+      # every request gets 401 (fails closed). See .env.example.
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER:-}
+      BASIC_AUTH_HASH: ${BASIC_AUTH_HASH:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env*
+!.env.example
+backend
+docs
+Dockerfile
+docker-compose.yaml
+deploy
+*.md

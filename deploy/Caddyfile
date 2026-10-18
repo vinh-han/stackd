@@ -1,0 +1,11 @@
+{$DOMAIN} {
+	# shortcut: one shared login keeps strangers off the Gemini key until real accounts exist.
+	basic_auth {
+		{$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
+	}
+	request_body {
+		max_size 1MB
+	}
+	encode zstd gzip
+	reverse_proxy web:3000
+}

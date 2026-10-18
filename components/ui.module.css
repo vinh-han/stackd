@@ -1,0 +1,405 @@
+/* Shared shell and controls. Breakpoint: desktop from 900px, as in the review design. */
+
+.app {
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 900px) {
+  .mobileOnly {
+    display: none !important;
+  }
+}
+
+@media (max-width: 899.98px) {
+  .desktopOnly {
+    display: none !important;
+  }
+}
+
+/* ---------- Rail ---------- */
+
+.rail {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .rail {
+    width: 240px;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    padding: 22px 18px;
+    background: var(--rail);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+  }
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--text);
+}
+
+.railGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.railLabel {
+  padding: 0 10px 8px;
+  font: 400 10px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+
+.deckItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 9px;
+  text-align: left;
+  transition: background-color 80ms;
+}
+
+.deckItem:hover {
+  background: var(--surface);
+}
+
+.deckItemActive,
+.deckItemActive:hover {
+  background: var(--surface-2);
+}
+
+.deckName {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deckItemActive .deckName {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.deckCount {
+  font: 400 12px var(--font-mono), monospace;
+  color: var(--text-muted);
+}
+
+.deckCountHot {
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.railAdd {
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.railAdd:hover {
+  background: var(--surface);
+  color: var(--text-2);
+}
+
+.topicItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.topicValue {
+  font: 400 12px var(--font-mono), monospace;
+  color: var(--text-muted);
+}
+
+.goal {
+  margin-top: auto;
+  padding: 14px;
+  border-radius: 11px;
+  background: var(--surface);
+}
+
+.goalDays {
+  font: 500 15px var(--font-mono), monospace;
+  color: var(--text);
+}
+
+.goalDate {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---------- Buttons ---------- */
+
+.chip {
+  padding: 8px 11px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  font-weight: 500;
+  font-size: 11.5px;
+  color: var(--text-2);
+  transition: background-color 80ms;
+}
+
+.chip:hover {
+  background: var(--border);
+}
+
+@media (min-width: 900px) {
+  .chip {
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+}
+
+.primaryBtn,
+.outlineBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: filter 80ms;
+}
+
+.primaryBtn {
+  background: var(--primary-bg);
+  color: var(--primary-fg);
+  font-weight: 600;
+}
+
+.outlineBtn {
+  border: 1px solid var(--border);
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.primaryBtn:disabled,
+.outlineBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.primaryBtn:hover:not(:disabled),
+.outlineBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.ghostBtn {
+  flex: none;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-weight: 500;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.ghostBtn:hover {
+  background: var(--surface);
+}
+
+@media (min-width: 900px) {
+  .ghostBtn {
+    padding: 7px 13px;
+    font-size: 12.5px;
+  }
+}
+
+.textBtn {
+  padding: 4px;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.textBtn:hover {
+  color: var(--text);
+}
+
+.dangerText {
+  color: oklch(0.70 0.13 25);
+}
+
+/* ---------- Fields ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.fieldLabel {
+  font: 400 10.5px var(--font-mono), monospace;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--text-dim);
+}
+
+/* ---------- Sheet ---------- */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--scrim);
+}
+
+@media (min-width: 900px) {
+  .scrim {
+    align-items: center;
+  }
+}
+
+.sheet {
+  width: 100%;
+  max-height: 90dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 16px calc(16px + env(safe-area-inset-bottom));
+  border-radius: 20px 20px 0 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  .sheet {
+    width: 560px;
+    padding: 24px;
+    border-radius: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.sheetTitle {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.sheetActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sheetHint {
+  margin-right: auto;
+  font: 400 11px var(--font-mono), monospace;
+  color: var(--text-ghost);
+}
+
+/* ---------- Toast ---------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(136px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px 10px 16px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-2);
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.25);
+}
+
+@media (min-width: 900px) {
+  .toast {
+    left: calc(50% + 120px);
+    bottom: 144px;
+  }
+}
+
+.toastAction {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.saveBanner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background: oklch(0.45 0.13 25);
+  color: oklch(0.98 0.01 25);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ---------- Bars ---------- */
+
+.bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--track-2);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--fill);
+}

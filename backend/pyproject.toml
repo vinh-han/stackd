@@ -1,0 +1,25 @@
+[project]
+name = "stackd-api"
+version = "0.1.0"
+description = "Stackd backend: chunking and card generation. Home of Docling ingestion."
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "httpx>=0.28",
+    "pydantic>=2.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.uv]
+# An application, not a library: run from source, no build step.
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

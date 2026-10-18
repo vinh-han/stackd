@@ -1,0 +1,24 @@
+.passage {
+  max-height: 50dvh;
+  overflow-y: auto;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--bg);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+}
+
+.mark {
+  padding: 1px 2px;
+  border-radius: 3px;
+  background: oklch(0.72 0.11 var(--accent-h) / 0.28);
+  color: var(--text);
+}
+
+.missing {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}

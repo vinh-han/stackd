@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.env
+.env*.local
+
+# Python backend
+.venv/
+__pycache__/
+.pytest_cache/
+
+.obsidian/

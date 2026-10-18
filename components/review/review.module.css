@@ -1,0 +1,692 @@
+/*
+ * Review screen. Shell, rail and buttons live in ../ui.module.css. Mobile-first (design turn 1, 375px), desktop from 900px (design turn 3, 1280px).
+ * Rules carried from the design:
+ *  - The only chromatic color is Good (and Easy's outline). Progress and mastery bars stay neutral.
+ *  - Flipping never moves the question. The dock keeps one fixed height in both states.
+ */
+
+/* ---------- Main column ---------- */
+
+.header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+}
+
+@media (min-width: 900px) {
+  .header {
+    height: 60px;
+    gap: 16px;
+    padding: 0 28px;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+.back {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--text-dim);
+}
+
+@media (min-width: 900px) {
+  .back {
+    width: auto;
+    height: auto;
+    background: none;
+    font-size: 13.5px;
+    font-weight: 500;
+  }
+
+  .back:hover {
+    color: var(--text);
+  }
+}
+
+.titleBlock {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .titleBlock {
+    flex: none;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+}
+
+.title {
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dueCount {
+  margin-top: 2px;
+  font: 400 11px var(--font-mono), monospace;
+  color: var(--text-muted);
+}
+
+@media (min-width: 900px) {
+  .title {
+    font-size: 15px;
+  }
+
+  .dueCount {
+    margin-top: 0;
+    font-size: 13px;
+  }
+}
+
+.spacer {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .spacer {
+    display: block;
+    flex: 1;
+  }
+}
+
+.headerActions {
+  flex: none;
+  display: flex;
+  gap: 6px;
+}
+
+@media (min-width: 900px) {
+  .headerActions {
+    gap: 8px;
+  }
+}
+
+.progress {
+  flex: none;
+  height: 3px;
+  margin: 0 16px;
+  border-radius: 2px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .progress {
+    height: 2px;
+    margin: 0;
+    border-radius: 0;
+    background: var(--track);
+  }
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--fill);
+  transition: width 90ms ease-out;
+}
+
+/* ---------- Card ---------- */
+
+.stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 26px 22px 8px;
+}
+
+@media (min-width: 900px) {
+  .stage {
+    padding: 56px 40px 0;
+  }
+}
+
+.card {
+  width: 720px;
+  max-width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.cardExpanded {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (min-width: 900px) {
+  .card {
+    gap: 24px;
+  }
+}
+
+.meta {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font: 400 9.5px var(--font-mono), monospace;
+}
+
+@media (min-width: 900px) {
+  .meta {
+    gap: 14px;
+    font-size: 10px;
+  }
+}
+
+.cardType {
+  letter-spacing: 0.14em;
+  color: var(--text-2);
+}
+
+.cardTopic {
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.question,
+.answer {
+  margin: 0;
+  flex: none;
+  font-weight: 500;
+  font-size: 23px;
+  line-height: 1.42;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 900px) {
+  .question,
+  .answer {
+    font-size: 27px;
+    line-height: 1.45;
+  }
+}
+
+.question {
+  color: var(--text);
+  transition: color 80ms;
+}
+
+.questionDim {
+  color: var(--text-dim);
+}
+
+.vocab {
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1.3;
+}
+
+@media (min-width: 900px) {
+  .vocab {
+    font-size: 40px;
+  }
+}
+
+.answer {
+  color: var(--text);
+}
+
+.answerClamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}
+
+.divider {
+  flex: none;
+  height: 1px;
+  background: var(--divider);
+}
+
+.cardFooter {
+  flex: none;
+  margin-top: auto;
+  padding-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (min-width: 900px) {
+  .cardFooter {
+    gap: 14px;
+    padding-bottom: 22px;
+  }
+}
+
+.source {
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+  font: 400 10.5px var(--font-mono), monospace;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+button.source:hover {
+  color: var(--text-2);
+  text-decoration: underline;
+}
+
+@media (min-width: 900px) {
+  .source {
+    font-size: 11.5px;
+  }
+}
+
+/* ---------- Dock: Show answer / ratings. Same height in both states. ---------- */
+
+.dock {
+  flex: none;
+  height: calc(120px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 900px) {
+  .dock {
+    height: 128px;
+    align-items: center;
+    gap: 12px;
+    padding: 0 40px 34px;
+    border-top: 0;
+  }
+}
+
+.slot {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 900px) {
+  .slot {
+    flex: none;
+    height: 68px;
+  }
+}
+
+.showAnswer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 16px;
+  background: var(--primary-bg);
+  color: var(--primary-fg);
+  font-weight: 600;
+  font-size: 16px;
+  transition: transform 80ms;
+}
+
+.showAnswer:active {
+  transform: scale(0.985);
+}
+
+@media (min-width: 900px) {
+  .showAnswer {
+    width: 312px;
+    height: 52px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
+}
+
+.kbd {
+  padding: 2px 5px;
+  border: 1px solid var(--kbd-border);
+  border-radius: 5px;
+  font: 400 10.5px var(--font-mono), monospace;
+  color: var(--kbd-fg);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .kbd {
+    display: none;
+  }
+}
+
+.hint {
+  text-align: center;
+  font: 400 10.5px var(--font-mono), monospace;
+  color: var(--text-ghost);
+}
+
+@media (min-width: 900px) {
+  .hint {
+    font-size: 11.5px;
+  }
+}
+
+.ratings {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 7px;
+}
+
+@media (min-width: 900px) {
+  .ratings {
+    width: auto;
+    gap: 12px;
+  }
+}
+
+.rate {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 15px;
+  background: var(--btn);
+  border: 1px solid var(--border);
+  transition: filter 80ms, transform 80ms;
+}
+
+.rate:hover {
+  filter: brightness(1.1);
+}
+
+.rate:active {
+  transform: scale(0.97);
+}
+
+@media (min-width: 900px) {
+  .rate {
+    flex: none;
+    width: 150px;
+    height: 68px;
+    gap: 3px;
+    border-radius: 14px;
+  }
+}
+
+.rateLabel {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.rateInterval {
+  font: 500 11.5px var(--font-mono), monospace;
+  color: var(--text-muted);
+}
+
+@media (min-width: 900px) {
+  .rateLabel {
+    font-size: 15px;
+  }
+
+  .rateInterval {
+    font-size: 12.5px;
+  }
+}
+
+.rateGood {
+  background: var(--good-bg);
+  border-color: transparent;
+}
+
+.rateGood .rateLabel {
+  color: var(--good-fg);
+}
+
+.rateGood .rateInterval {
+  color: var(--good-sub);
+}
+
+.rateEasy {
+  border-color: var(--easy-border);
+}
+
+.rateEasy .rateLabel {
+  color: var(--easy-fg);
+}
+
+.rateEasy .rateInterval {
+  color: var(--easy-sub);
+}
+
+.keys {
+  display: flex;
+  gap: 7px;
+}
+
+@media (min-width: 900px) {
+  .keys {
+    gap: 12px;
+  }
+}
+
+.key {
+  flex: 1;
+  text-align: center;
+  font: 400 10px var(--font-mono), monospace;
+  color: var(--text-ghost);
+}
+
+@media (min-width: 900px) {
+  .key {
+    flex: none;
+    width: 150px;
+    font-size: 11px;
+  }
+}
+
+/* ---------- Queue clear ---------- */
+
+.clearStage {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px 22px;
+}
+
+@media (min-width: 900px) {
+  .clearStage {
+    align-items: center;
+    padding: 40px;
+  }
+}
+
+.clearInner {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+@media (min-width: 900px) {
+  .clearInner {
+    width: 780px;
+    max-width: 100%;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 44px;
+  }
+}
+
+.clearMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.ring {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--fill);
+}
+
+@media (min-width: 900px) {
+  .ring {
+    display: none;
+  }
+}
+
+.clearTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.clearText {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  text-wrap: pretty;
+}
+
+@media (min-width: 900px) {
+  .clearTitle {
+    font-size: 38px;
+  }
+
+  .clearText {
+    margin-top: 12px;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+}
+
+.clearActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.clearSide {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 900px) {
+  .clearSide {
+    width: 290px;
+    flex: none;
+    gap: 12px;
+  }
+}
+
+.tiles {
+  display: flex;
+  gap: 10px;
+}
+
+.tile {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.tileValue {
+  font: 500 20px var(--font-mono), monospace;
+  color: var(--text);
+}
+
+.tileLabel {
+  margin-top: 4px;
+  font: 400 10.5px var(--font-mono), monospace;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+@media (min-width: 900px) {
+  .tile {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .tileLabel {
+    order: -1;
+    margin: 0 0 6px;
+    letter-spacing: 0.1em;
+  }
+
+  .tileValue {
+    font-size: 26px;
+  }
+}
+
+.tileBar {
+  margin-top: 10px;
+}
+
+.weak {
+  display: block;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+}
+
+.weakTitle {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.weakBody {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+@media (min-width: 900px) {
+  .weak {
+    border-radius: 12px;
+  }
+
+  .weakTitle {
+    font-size: 14px;
+  }
+
+  .weakBody {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
