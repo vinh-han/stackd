@@ -1,6 +1,8 @@
-"""Splits pasted text into chunks small enough for one generation call."""
+"""Splits text into chunks small enough for one generation call."""
 
 import re
+from collections.abc import Iterable
+from dataclasses import dataclass, field
 
 # Target and hard limit per chunk, in characters. Roughly 750 to 1,000 tokens.
 CHUNK_TARGET = 3000
@@ -13,19 +15,33 @@ _PARAGRAPH_BREAK = re.compile(r"\n\s*\n")
 _SENTENCE = re.compile(r"[^.!?。]*[.!?。]+[\"')\]]*\s*|[^.!?。]+$")
 
 
+@dataclass
+class Chunk:
+    text: str
+    # Source pages (1-based) the text came from. Empty for pasted text and page-less formats like .docx.
+    pages: list[int] = field(default_factory=list)
+
+
 def chunk_text(text: str) -> list[str]:
     """Splits on paragraph boundaries, falling back to sentences, then hard cuts."""
     paragraphs = (p.strip() for p in _PARAGRAPH_BREAK.split(text.replace("\r\n", "\n")))
-    pieces = [piece for p in paragraphs if p for piece in _split_long(p)]
+    return [c.text for c in group_pieces((p, []) for p in paragraphs if p)]
 
-    chunks: list[str] = []
-    current = ""
-    for piece in pieces:
-        if current and len(current) + len(piece) + 2 > CHUNK_TARGET:
-            chunks.append(current)
-            current = piece
-        else:
-            current = f"{current}\n\n{piece}" if current else piece
+
+def group_pieces(pieces: Iterable[tuple[str, list[int]]]) -> list[Chunk]:
+    """Packs consecutive pieces (paragraphs, tables) into chunks up to CHUNK_TARGET, keeping their pages."""
+    chunks: list[Chunk] = []
+    current: Chunk | None = None
+    for text, pages in pieces:
+        for piece in _split_long(text):
+            if current and len(current.text) + len(piece) + 2 > CHUNK_TARGET:
+                chunks.append(current)
+                current = None
+            if current is None:
+                current = Chunk(piece, sorted(set(pages)))
+            else:
+                current.text = f"{current.text}\n\n{piece}"
+                current.pages = sorted(set(current.pages) | set(pages))
     if current:
         chunks.append(current)
     return chunks

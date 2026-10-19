@@ -1,4 +1,4 @@
-import type { ChunkResponse, GenerateError, GenerateResponse, GeneratedCard } from "./types";
+import type { ChunkResponse, ExtractedChunk, GenerateError, GenerateResponse, GeneratedCard, JobStatus } from "./types";
 
 const CONCURRENCY = 2;
 const RETRY_DELAY_MS = 1000;
@@ -37,6 +37,29 @@ export async function splitText(text: string, signal: AbortSignal): Promise<stri
   });
   if (!res.ok) throw await errorFrom(res);
   return ((await res.json()) as ChunkResponse).chunks;
+}
+
+const POLL_MS = 1000;
+
+/** Uploads a file for extraction (Docling, with OCR) and waits for its chunks, reporting page progress. */
+export async function extractFile(
+  file: File,
+  signal: AbortSignal,
+  onProgress: (pagesDone: number, pagesTotal: number | null) => void,
+): Promise<ExtractedChunk[]> {
+  const res = await fetch(`/api/extract?filename=${encodeURIComponent(file.name)}`, { method: "POST", body: file, signal });
+  if (!res.ok) throw await errorFrom(res);
+  const { jobId } = (await res.json()) as { jobId: string };
+
+  for (;;) {
+    await new Promise((r) => setTimeout(r, POLL_MS));
+    const poll = await fetch(`/api/jobs/${jobId}`, { signal });
+    if (!poll.ok) throw await errorFrom(poll);
+    const job = (await poll.json()) as JobStatus;
+    onProgress(job.pagesDone, job.pagesTotal);
+    if (job.status === "done") return job.chunks ?? [];
+    if (job.status === "failed") throw new GenerationError(job.error ?? "Could not read this file.", job.code ?? "upstream");
+  }
 }
 
 async function requestChunk(text: string, topics: string[], signal: AbortSignal): Promise<GenerateResponse> {

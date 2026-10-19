@@ -32,6 +32,15 @@ export function formatDue(due: Date, now: Date): string {
   return `in ${Math.round(ms / DAY)}d`;
 }
 
+/** "p.12", "p.12-14", or "slide 3" for presentations. Empty when the format has no real pages (Word, photos). */
+export function formatPages(pages: number[], filename: string): string {
+  if (pages.length === 0 || /\.(png|jpe?g|webp|tiff?)$/i.test(filename)) return "";
+  const lo = Math.min(...pages);
+  const hi = Math.max(...pages);
+  const range = lo === hi ? `${lo}` : `${lo}-${hi}`;
+  return /\.pptx$/i.test(filename) ? `slide${lo === hi ? "" : "s"} ${range}` : `p.${range}`;
+}
+
 /** yyyy-mm-dd for <input type="date">, in local time. */
 export function toDateInput(d?: Date): string {
   if (!d) return "";

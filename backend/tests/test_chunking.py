@@ -1,6 +1,6 @@
 import re
 
-from stackd_api.chunking import CHUNK_MAX, CHUNK_TARGET, chunk_text
+from stackd_api.chunking import CHUNK_MAX, CHUNK_TARGET, chunk_text, group_pieces
 
 
 def squash(s: str) -> str:
@@ -49,6 +49,17 @@ def test_text_without_punctuation_is_hard_cut():
 
     assert all(len(c) <= CHUNK_MAX for c in chunks)
     assert "".join(chunks) == text
+
+
+def test_grouped_pieces_merge_their_pages():
+    chunks = group_pieces([("page one text", [1]), ("table on two", [2]), ("x" * CHUNK_TARGET, [3])])
+    assert [c.pages for c in chunks] == [[1, 2], [3]]
+
+
+def test_split_long_piece_keeps_its_pages():
+    chunks = group_pieces([("Sentence on page five. " * 300, [5])])
+    assert len(chunks) > 1
+    assert all(c.pages == [5] for c in chunks)
 
 
 def test_windows_line_endings_split_paragraphs():

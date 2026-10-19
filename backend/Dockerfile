@@ -7,13 +7,23 @@ WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     PYTHONUNBUFFERED=1 \
-    PATH="/app/.venv/bin:$PATH"
+    PATH="/app/.venv/bin:$PATH" \
+    HF_HOME=/models/hf \
+    EASYOCR_MODULE_PATH=/models/easyocr
 
 # Dependencies first, cached until pyproject/uv.lock change.
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
+# Cache mount: uv's download cache (~1.5 GB of wheels) speeds rebuilds but stays out of the image.
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
 COPY stackd_api ./stackd_api
+
+# Bake every model into the image (layout, tables, OCR) by running the real extraction once on a text PDF
+# with a table and a scanned PDF. No upload ever waits on a download, and the server runs offline.
+COPY tests/fixtures/storage.pdf tests/fixtures/scanned.pdf /tmp/warmup/
+RUN python -c "from pathlib import Path; from stackd_api.extract import extract; [extract(p.name, p.read_bytes()) for p in Path('/tmp/warmup').iterdir()]" \
+    && rm -rf /tmp/warmup
+ENV HF_HUB_OFFLINE=1
 
 RUN useradd --system --no-create-home app
 USER app

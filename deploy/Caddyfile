@@ -3,7 +3,13 @@
 	basic_auth {
 		{$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
 	}
-	request_body {
+	# File uploads (PDF, Word, PowerPoint, images) up to 20 MB; every other request up to 1 MB.
+	@upload path /api/extract
+	@other not path /api/extract
+	request_body @upload {
+		max_size 20MB
+	}
+	request_body @other {
 		max_size 1MB
 	}
 	encode zstd gzip

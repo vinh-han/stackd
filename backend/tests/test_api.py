@@ -1,4 +1,5 @@
 import json
+import time
 
 import httpx
 
@@ -102,6 +103,62 @@ def test_generate_bad_model_is_a_config_error(client, stub_gemini):
     res = client.post("/generate", json={"text": SOURCE})
     assert res.status_code == 503
     assert res.json()["code"] == "bad_config"
+
+
+# ---------- /extract and /jobs ----------
+
+
+def poll(client, job_id: str, tries: int = 50) -> dict:
+    for _ in range(tries):
+        body = client.get(f"/jobs/{job_id}").json()
+        if body["status"] in ("done", "failed"):
+            return body
+        time.sleep(0.05)
+    raise AssertionError(f"job stuck: {body}")
+
+
+def test_extract_rejects_bad_file_before_queueing(client):
+    res = client.post("/extract?filename=fake.pdf", content=b"not a pdf")
+    assert res.status_code == 400
+    assert res.json() == {"error": "This file is not a valid PDF file.", "code": "bad_request"}
+
+
+def test_extract_job_returns_chunks_with_pages(client, monkeypatch):
+    from stackd_api import jobs
+    from stackd_api.chunking import Chunk
+
+    def fake_extract(filename, data, on_progress):
+        on_progress(1, 2)
+        on_progress(2, 2)
+        return [Chunk("Glacier text", [1, 2])]
+
+    monkeypatch.setattr(jobs, "extract", fake_extract)
+    monkeypatch.setattr("stackd_api.main.check_upload", lambda *_: None)  # the fake bytes are not a real PDF
+    res = client.post("/extract?filename=notes.pdf", content=b"%PDF-1.7")
+    assert res.status_code == 202
+    body = poll(client, res.json()["jobId"])
+    assert body["status"] == "done"
+    assert body["chunks"] == [{"text": "Glacier text", "pages": [1, 2]}]
+    assert (body["pagesDone"], body["pagesTotal"]) == (2, 2)
+
+
+def test_failed_extraction_reports_the_reason(client, monkeypatch):
+    from stackd_api import jobs
+    from stackd_api.extract import ExtractError
+
+    def fail(*_args, **_kwargs):
+        raise ExtractError("No text found in this file.")
+
+    monkeypatch.setattr(jobs, "extract", fail)
+    monkeypatch.setattr("stackd_api.main.check_upload", lambda *_: None)
+    body = poll(client, client.post("/extract?filename=a.png", content=b"x").json()["jobId"])
+    assert (body["status"], body["error"], body["code"]) == ("failed", "No text found in this file.", "bad_request")
+
+
+def test_unknown_job_is_404_in_api_error_shape(client):
+    res = client.get("/jobs/nope")
+    assert res.status_code == 404
+    assert res.json()["code"] == "bad_request"
 
 
 def test_generate_rejects_oversized_chunk(client, stub_gemini):

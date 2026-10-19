@@ -26,6 +26,25 @@ export interface ChunkResponse {
   chunks: string[];
 }
 
+/** Mirrors backend/stackd_api/extract.py, which enforces both. Here for the file picker and an early size check. */
+export const MAX_FILE_BYTES = 20 * 1024 * 1024;
+export const FILE_EXTENSIONS = [".pdf", ".docx", ".pptx", ".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff"];
+
+export interface ExtractedChunk {
+  text: string;
+  /** Source pages (slides for .pptx). Empty for formats without pages, like .docx. */
+  pages: number[];
+}
+
+export interface JobStatus {
+  status: "queued" | "running" | "done" | "failed";
+  pagesDone: number;
+  pagesTotal: number | null;
+  chunks: ExtractedChunk[] | null;
+  error: string | null;
+  code: GenerateError["code"] | null;
+}
+
 export interface GenerateError {
   error: string;
   /** "unavailable" comes from the Next.js proxy when the backend is down; the rest from the backend. */

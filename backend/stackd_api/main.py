@@ -9,9 +9,11 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from . import jobs
 from .chunking import chunk_text
+from .extract import MAX_FILE_BYTES, ExtractError, check_upload
 from .gemini import ConfigError, GeminiClient, MissingKeyError, UpstreamError
-from .schemas import ChunkRequest, ChunkResponse, ErrorResponse, GenerateRequest, GenerateResponse
+from .schemas import ChunkRequest, ChunkResponse, ErrorResponse, GenerateRequest, GenerateResponse, JobCreated, JobStatus
 
 log = logging.getLogger("stackd")
 DEFAULT_MODEL = "gemini-3.1-flash-lite"
@@ -47,6 +49,11 @@ async def _bad_request(_: Request, exc: RequestValidationError) -> JSONResponse:
     return _error(400, message, "bad_request")
 
 
+@app.exception_handler(ExtractError)
+async def _bad_file(_: Request, exc: ExtractError) -> JSONResponse:
+    return _error(400, str(exc), "bad_request")
+
+
 @app.exception_handler(MissingKeyError)
 async def _missing_key(_: Request, __: MissingKeyError) -> JSONResponse:
     return _error(503, "Card generation is not configured. Set GEMINI_API_KEY in .env.local.", "missing_key")
@@ -78,3 +85,19 @@ async def chunk(req: ChunkRequest) -> ChunkResponse:
 async def generate(req: GenerateRequest, gemini: GeminiClient = Depends(get_generator)) -> GenerateResponse:
     """Generates cards for one chunk. The client fans out over chunks and shows progress."""
     return await gemini.generate_cards(req.text, req.topics)
+
+
+@app.post("/extract", response_model=JobCreated, status_code=202)
+async def extract_file(request: Request, filename: str) -> JobCreated:
+    """Queues a file (raw request body) for text extraction. Poll /jobs/{job_id} for the chunks."""
+    if int(request.headers.get("content-length") or 0) > MAX_FILE_BYTES:
+        raise ExtractError(f"File is larger than {MAX_FILE_BYTES // (1024 * 1024)} MB.")
+    data = await request.body()
+    check_upload(filename, data)
+    return JobCreated(job_id=jobs.submit(filename, data))
+
+
+@app.get("/jobs/{job_id}", response_model=JobStatus)
+async def job_status(job_id: str) -> JobStatus | JSONResponse:
+    status = jobs.get(job_id)
+    return status if status else _error(404, "This upload has expired. Upload the file again.", "bad_request")

@@ -8,6 +8,10 @@ dependencies = [
     "uvicorn[standard]>=0.32",
     "httpx>=0.28",
     "pydantic>=2.9",
+    "docling>=2.140.0",
+    "torch>=2.14.1",
+    "torchvision>=0.29.1",
+    "easyocr>=1.7.2",
 ]
 
 [dependency-groups]
@@ -18,6 +22,16 @@ dev = [
 [tool.uv]
 # An application, not a library: run from source, no build step.
 package = false
+
+# CPU-only PyTorch for Docling: the default Linux wheel bundles CUDA (several GB) we never use.
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

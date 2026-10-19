@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { plural } from "@/lib/format";
-import { GenerationError, generateFromChunks, splitText } from "@/lib/generation/run";
-import { MAX_INPUT_CHARS } from "@/lib/generation/types";
+import { formatPages, plural } from "@/lib/format";
+import { GenerationError, extractFile, generateFromChunks, splitText } from "@/lib/generation/run";
+import { FILE_EXTENSIONS, MAX_FILE_BYTES, MAX_INPUT_CHARS } from "@/lib/generation/types";
 import { store, useStore, type NewCard } from "@/lib/store";
 import type { Deck, StudyCard } from "@/lib/types";
 import { useNow } from "../ClientOnly";
@@ -16,7 +16,14 @@ const NEW = "__new__";
 
 type Phase =
   | { kind: "idle" }
-  | { kind: "running"; done: number; total: number; cards: number }
+  | {
+      kind: "running";
+      done: number;
+      total: number;
+      cards: number;
+      /** Set while an uploaded file is being read (Docling, with OCR for scans). */
+      reading?: { pagesDone: number; pagesTotal: number | null };
+    }
   | { kind: "done"; deckId: string; cardIds: string[]; failed: number; total: number }
   | { kind: "error"; message: string; missingKey: boolean };
 
@@ -30,7 +37,9 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
   );
   const [newDeckName, setNewDeckName] = useState("");
   const [title, setTitle] = useState("");
+  const [mode, setMode] = useState<"text" | "file">("text");
   const [text, setText] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const abortRef = useRef<AbortController | null>(null);
 
@@ -38,7 +47,9 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
 
   const deck = decks.find((d) => d.id === deckChoice);
   const over = text.length > MAX_INPUT_CHARS;
-  const canGenerate = text.trim().length > 0 && !over && phase.kind !== "running";
+  const fileTooBig = !!file && file.size > MAX_FILE_BYTES;
+  const hasInput = mode === "file" ? !!file && !fileTooBig : text.trim().length > 0 && !over;
+  const canGenerate = hasInput && phase.kind !== "running";
 
   /** Picks the existing deck, or creates the new one on first save. */
   const resolveDeck = (lang?: string): Deck => {
@@ -54,7 +65,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
   const generate = async (e?: FormEvent) => {
     e?.preventDefault();
     if (!canGenerate) return;
-    const sourceTitle = title.trim() || "Pasted text";
+    const sourceTitle = title.trim() || (mode === "file" && file ? file.name : "Pasted text");
     const deckTopics = deck ? [...new Set(cards.filter((c) => c.deckId === deck.id).map((c) => c.topic))] : [];
 
     const controller = new AbortController();
@@ -62,7 +73,19 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
     setPhase({ kind: "running", done: 0, total: 0, cards: 0 });
 
     try {
-      const chunks = await splitText(text, controller.signal);
+      let chunks: string[];
+      let refs: string[];
+      if (mode === "file" && file) {
+        const reading = (pagesDone: number, pagesTotal: number | null) =>
+          setPhase({ kind: "running", done: 0, total: 0, cards: 0, reading: { pagesDone, pagesTotal } });
+        reading(0, null);
+        const extracted = await extractFile(file, controller.signal, reading);
+        chunks = extracted.map((c) => c.text);
+        refs = extracted.map((c) => [sourceTitle, formatPages(c.pages, file.name)].filter(Boolean).join(" "));
+      } else {
+        chunks = await splitText(text, controller.signal);
+        refs = chunks.map((_, i) => (chunks.length > 1 ? `${sourceTitle} §${i + 1}` : sourceTitle));
+      }
       setPhase({ kind: "running", done: 0, total: chunks.length, cards: 0 });
       const result = await generateFromChunks(
         chunks,
@@ -73,7 +96,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
       if (controller.signal.aborted) return;
 
       const target = resolveDeck(result.language);
-      const source = store.addSource({ deckId: target.id, title: sourceTitle, kind: "text", chunks });
+      const source = store.addSource({ deckId: target.id, title: sourceTitle, kind: mode, chunks });
       const newCards: NewCard[] = result.chunks.flatMap((r) =>
         r.cards.map((c) => ({
           deckId: target.id,
@@ -82,7 +105,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
           subtopic: c.subtopic ?? undefined,
           front: c.front,
           back: c.back,
-          sourceRef: chunks.length > 1 ? `${sourceTitle} §${r.index + 1}` : sourceTitle,
+          sourceRef: refs[r.index],
           sourceId: source.id,
           chunkIndex: r.index,
           sourceQuote: c.sourceQuote || undefined,
@@ -91,6 +114,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
       const created = store.addCards(newCards);
       setPhase({ kind: "done", deckId: target.id, cardIds: created.map((c) => c.id), failed: result.failed, total: chunks.length });
       setText("");
+      setFile(null);
       setTitle("");
     } catch (err) {
       if (controller.signal.aborted) return;
@@ -127,7 +151,10 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
               <>
                 <section>
                   <h1 className={styles.h1}>Add cards</h1>
-                  <p className={styles.lede}>Paste notes, a chapter or an article, in any language. Cards come back in the same language.</p>
+                  <p className={styles.lede}>
+                    Paste text, or upload a PDF, Word, PowerPoint or photo of your notes, in any language. Cards come back in the
+                    same language.
+                  </p>
                 </section>
 
                 <form className={styles.form} onSubmit={generate}>
@@ -169,6 +196,46 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                     />
                   </label>
 
+                  <div className={styles.modeSwitch} role="tablist" aria-label="Input">
+                    {(["text", "file"] as const).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        role="tab"
+                        aria-selected={mode === m}
+                        className={`${styles.modeBtn} ${mode === m ? styles.modeBtnActive : ""}`}
+                        onClick={() => setMode(m)}
+                        disabled={phase.kind === "running"}
+                      >
+                        {m === "text" ? "Paste text" : "Upload file"}
+                      </button>
+                    ))}
+                  </div>
+
+                  {mode === "file" ? (
+                    <label
+                      className={styles.dropzone}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (phase.kind !== "running" && e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+                      }}
+                    >
+                      <input
+                        type="file"
+                        accept={FILE_EXTENSIONS.join(",")}
+                        className={styles.fileInput}
+                        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                        disabled={phase.kind === "running"}
+                      />
+                      <span className={styles.dropTitle}>{file ? file.name : "Drop a file here, or click to choose"}</span>
+                      <span className={fileTooBig ? styles.counterOver : styles.muted}>
+                        {file
+                          ? `${file.size < 1024 * 1024 ? `${Math.ceil(file.size / 1024)} KB` : `${(file.size / 1024 / 1024).toFixed(1)} MB`}${fileTooBig ? " · over the 20 MB limit" : ""}`
+                          : "PDF, Word (.docx), PowerPoint (.pptx) or image. Up to 20 MB and 100 pages."}
+                      </span>
+                    </label>
+                  ) : (
                   <label className={ui.field}>
                     <span className={ui.fieldLabel}>TEXT</span>
                     <textarea
@@ -181,11 +248,16 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                       autoFocus
                     />
                   </label>
+                  )}
 
                   {phase.kind === "running" ? (
                     <div className={styles.progressBlock} role="status">
                       <div className={styles.progressText}>
-                        {phase.total === 0
+                        {phase.reading
+                          ? phase.reading.pagesTotal
+                            ? `Reading page ${phase.reading.pagesDone} of ${phase.reading.pagesTotal}`
+                            : "Reading file. Scans and photos take longer"
+                          : phase.total === 0
                           ? "Preparing"
                           : phase.done < phase.total
                             ? `Reading section ${Math.min(phase.done + 1, phase.total)} of ${phase.total}`
@@ -193,7 +265,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                         {phase.cards > 0 && ` · ${plural(phase.cards, "card")} so far`}
                       </div>
                       <div className={styles.progressTrack}>
-                        <div className={styles.progressFill} style={{ width: `${phase.total ? (phase.done / phase.total) * 100 : 0}%` }} />
+                        <div className={styles.progressFill} style={{ width: `${progressPct(phase)}%` }} />
                       </div>
                       <div>
                         <button type="button" className={ui.textBtn} onClick={cancel}>
@@ -206,9 +278,11 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                       <button type="submit" className={ui.primaryBtn} disabled={!canGenerate}>
                         Generate cards
                       </button>
-                      <span className={`${styles.counter} ${over ? styles.counterOver : ""}`}>
-                        {text.length.toLocaleString("en")} / {MAX_INPUT_CHARS.toLocaleString("en")}
-                      </span>
+                      {mode === "text" && (
+                        <span className={`${styles.counter} ${over ? styles.counterOver : ""}`}>
+                          {text.length.toLocaleString("en")} / {MAX_INPUT_CHARS.toLocaleString("en")}
+                        </span>
+                      )}
                       <span className={`${styles.counter} ${ui.desktopOnly}`}>ctrl + enter</span>
                     </div>
                   )}
@@ -235,6 +309,11 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
       </main>
     </div>
   );
+}
+
+function progressPct(phase: Extract<Phase, { kind: "running" }>): number {
+  if (phase.reading) return phase.reading.pagesTotal ? (phase.reading.pagesDone / phase.reading.pagesTotal) * 100 : 0;
+  return phase.total ? (phase.done / phase.total) * 100 : 0;
 }
 
 function Result({

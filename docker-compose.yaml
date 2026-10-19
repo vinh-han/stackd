@@ -40,8 +40,8 @@ services:
     deploy:
       resources:
         limits:
-          # Headroom for Docling's layout models once PDF ingestion lands.
-          memory: 2g
+          # Docling + EasyOCR peaked at the old 2 GB cap on a 60-page PDF. With web's 1 GB this fits a 4 GB server.
+          memory: 3g
 
   caddy:
     image: caddy:2.10-alpine

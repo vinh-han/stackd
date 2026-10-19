@@ -71,6 +71,24 @@ class GenerateResponse(ApiModel):
     cards: list[GeneratedCard]
 
 
+class ExtractedChunk(ApiModel):
+    text: str
+    pages: list[int]
+
+
+class JobCreated(ApiModel):
+    job_id: str
+
+
+class JobStatus(ApiModel):
+    status: Literal["queued", "running", "done", "failed"]
+    pages_done: int = 0
+    pages_total: int | None = None
+    chunks: list[ExtractedChunk] | None = None
+    error: str | None = None
+    code: ErrorCode | None = None
+
+
 class ErrorResponse(ApiModel):
     error: str
     code: ErrorCode

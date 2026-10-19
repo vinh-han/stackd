@@ -6,31 +6,28 @@ import type { GenerateError } from "./generation/types";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 const TIMEOUT_MS = 60_000;
 /** 50,000 characters of text, JSON-escaped and UTF-8 encoded, fits well inside this. */
-const MAX_BODY_BYTES = 256 * 1024;
+export const MAX_JSON_BYTES = 256 * 1024;
 
-/** Forwards a JSON POST to the backend and relays its status and body unchanged. */
-export async function proxyJson(path: string, req: Request): Promise<Response> {
+const fail = (status: number, body: GenerateError) => NextResponse.json(body, { status });
+
+/** Forwards a request to the backend (same method, body and content type) and relays the response unchanged. */
+export async function proxy(path: string, req: Request, maxBytes = MAX_JSON_BYTES): Promise<Response> {
   // Check before buffering: one huge body would otherwise exhaust the container's memory.
   // Bodies without a length (chunked uploads) are capped by Caddy's request_body in production.
-  if (Number(req.headers.get("content-length")) > MAX_BODY_BYTES) {
-    const body: GenerateError = { error: "Request too large.", code: "bad_request" };
-    return NextResponse.json(body, { status: 413 });
+  if (Number(req.headers.get("content-length")) > maxBytes) {
+    return fail(413, { error: "Request too large.", code: "bad_request" });
   }
   let res: Response;
   try {
     res = await fetch(`${BACKEND_URL}${path}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: await req.text(),
+      method: req.method,
+      headers: { "content-type": req.headers.get("content-type") ?? "application/octet-stream" },
+      body: req.method === "GET" ? undefined : await req.arrayBuffer(),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch (err) {
     console.error(`backend ${path}:`, err);
-    const body: GenerateError = {
-      error: "The Stackd backend is not running. Start it with: npm run dev:api",
-      code: "unavailable",
-    };
-    return NextResponse.json(body, { status: 503 });
+    return fail(503, { error: "The Stackd backend is not running. Start it with: npm run dev:api", code: "unavailable" });
   }
   return new Response(res.body, {
     status: res.status,

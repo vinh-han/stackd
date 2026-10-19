@@ -36,7 +36,7 @@ export interface Source {
   id: string;
   deckId: string;
   title: string;
-  kind: "text";
+  kind: "text" | "file";
   chunks: string[];
   createdAt: Date;
 }
