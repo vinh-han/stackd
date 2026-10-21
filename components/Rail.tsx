@@ -58,9 +58,20 @@ export function Rail({ state, now, activeDeckId, children }: Props) {
         </Link>
       </nav>
       {children}
-      <Link href="/account" className={ui.railAdd}>
-        {account && !account.isGuest ? account.email : "Create account"}
-      </Link>
+      {account && !account.isGuest ? (
+        <Link href="/account" className={ui.railAdd}>
+          {account.email}
+        </Link>
+      ) : (
+        <div className={ui.railGroup}>
+          <Link href="/account" className={ui.railAdd}>
+            Create account
+          </Link>
+          <Link href="/account?mode=signin" className={ui.railAdd}>
+            Sign in
+          </Link>
+        </div>
+      )}
       {goal?.examDate && (
         <div className={ui.goal}>
           <div className={ui.goalDays}>{plural(daysUntil(goal.examDate, now), "day")} left</div>

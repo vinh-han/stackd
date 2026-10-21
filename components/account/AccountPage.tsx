@@ -11,11 +11,11 @@ import styles from "../pages.module.css";
 
 type Mode = "signUp" | "signIn";
 
-export function AccountPage() {
+export function AccountPage({ initialMode = "signUp" }: { initialMode?: Mode }) {
   const state = useStore();
   const account = useAccount();
   const now = useNow();
-  const [mode, setMode] = useState<Mode>("signUp");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -69,8 +69,26 @@ export function AccountPage() {
               </section>
             ) : (
               <>
+                <div className={styles.modeSwitch} role="tablist" aria-label="Account">
+                  {(["signUp", "signIn"] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      role="tab"
+                      aria-selected={mode === m}
+                      className={`${styles.modeBtn} ${mode === m ? styles.modeBtnActive : ""}`}
+                      onClick={() => {
+                        setMode(m);
+                        setMessage(null);
+                      }}
+                    >
+                      {m === "signUp" ? "Create account" : "Sign in"}
+                    </button>
+                  ))}
+                </div>
+
                 <section>
-                  <h1 className={styles.h1}>{mode === "signUp" ? "Create your account" : "Sign in"}</h1>
+                  <h1 className={styles.h1}>{mode === "signUp" ? "Create your account" : "Sign in to your account"}</h1>
                   <p className={styles.lede}>
                     {mode === "signUp"
                       ? `You're using Stackd as a guest. Create an account to keep your ${plural(state.cards.length, "card")} and use them on other devices.`
@@ -100,16 +118,6 @@ export function AccountPage() {
                   <div className={styles.formFoot}>
                     <button type="submit" className={ui.primaryBtn} disabled={busy}>
                       {mode === "signUp" ? "Create account" : "Sign in"}
-                    </button>
-                    <button
-                      type="button"
-                      className={ui.textBtn}
-                      onClick={() => {
-                        setMode(mode === "signUp" ? "signIn" : "signUp");
-                        setMessage(null);
-                      }}
-                    >
-                      {mode === "signUp" ? "I already have an account" : "Create an account instead"}
                     </button>
                   </div>
                   {message && (

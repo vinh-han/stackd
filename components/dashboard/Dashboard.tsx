@@ -104,7 +104,11 @@ export function Dashboard() {
                     <Link href="/account" className={ui.textBtn}>
                       Create an account
                     </Link>{" "}
-                    to keep them and study on any device.
+                    to keep them and study on any device, or{" "}
+                    <Link href="/account?mode=signin" className={ui.textBtn}>
+                      sign in
+                    </Link>
+                    .
                   </div>
                 )}
 
