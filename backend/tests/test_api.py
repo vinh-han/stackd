@@ -161,6 +161,23 @@ def test_unknown_job_is_404_in_api_error_shape(client):
     assert res.json()["code"] == "bad_request"
 
 
+# ---------- /anki ----------
+
+
+def test_anki_export_then_import_through_the_api(client):
+    res = client.post("/anki/export", json={"deckName": "D", "cards": [{"id": "c1", "front": "Q?", "back": "A.", "topic": "T"}]})
+    assert res.status_code == 200
+    back = client.post("/anki/import", content=res.content)
+    assert back.status_code == 200
+    assert back.json() == {"decks": [{"name": "D", "cards": [{"front": "Q?", "back": "A.", "type": "qa", "topic": "T", "srs": None}]}]}
+
+
+def test_anki_import_rejects_non_package(client):
+    res = client.post("/anki/import", content=b"not a zip")
+    assert res.status_code == 400
+    assert res.json()["code"] == "bad_request"
+
+
 def test_generate_rejects_oversized_chunk(client, stub_gemini):
     seen = stub_gemini(lambda _: gemini_reply({"cards": []}))
     res = client.post("/generate", json={"text": "x" * (CHUNK_MAX + 201)})

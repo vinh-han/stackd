@@ -8,6 +8,7 @@ import { FILE_EXTENSIONS, MAX_FILE_BYTES, MAX_INPUT_CHARS } from "@/lib/generati
 import { store, useStore, type NewCard } from "@/lib/store";
 import type { Deck, StudyCard } from "@/lib/types";
 import { useNow } from "../ClientOnly";
+import { AnkiImport } from "./AnkiImport";
 import { Rail } from "../Rail";
 import ui from "../ui.module.css";
 import styles from "../pages.module.css";
@@ -302,6 +303,8 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                 </form>
 
                 <ManualCard deckChoice={deckChoice} resolveDeck={() => resolveDeck()} />
+
+                <AnkiImport />
               </>
             )}
           </div>

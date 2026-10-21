@@ -5,7 +5,7 @@ import { loadStore, useSaveFailed, useStoreReady } from "@/lib/store";
 import ui from "./ui.module.css";
 
 /**
- * Renders children only in the browser, once saved data has loaded. Data lives in IndexedDB,
+ * Renders children only in the browser, once the account's data has loaded. Data is per signed-in user,
  * and due times depend on the viewer's clock and timezone, so server HTML would never match.
  */
 export function ClientOnly({ children }: { children: React.ReactNode }) {
@@ -19,8 +19,7 @@ export function ClientOnly({ children }: { children: React.ReactNode }) {
     <>
       {saveFailed && (
         <div role="alert" className={ui.saveBanner}>
-          Your changes are not being saved. Private browsing or blocked site data can cause this. Keep this tab open and
-          check your browser settings.
+          Can&apos;t reach Stackd&apos;s server, so recent changes may not be saved. Check your connection, then reload the page.
         </div>
       )}
       {children}

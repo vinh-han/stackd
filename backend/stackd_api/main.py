@@ -7,13 +7,14 @@ from contextlib import asynccontextmanager
 import httpx
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from . import jobs
+from .anki import MAX_APKG_BYTES, AnkiError, export_apkg, import_apkg
 from .chunking import chunk_text
 from .extract import MAX_FILE_BYTES, ExtractError, check_upload
 from .gemini import ConfigError, GeminiClient, MissingKeyError, UpstreamError
-from .schemas import ChunkRequest, ChunkResponse, ErrorResponse, GenerateRequest, GenerateResponse, JobCreated, JobStatus
+from .schemas import AnkiExportRequest, AnkiImport, ChunkRequest, ChunkResponse, ErrorResponse, GenerateRequest, GenerateResponse, JobCreated, JobStatus
 
 log = logging.getLogger("stackd")
 DEFAULT_MODEL = "gemini-3.1-flash-lite"
@@ -50,7 +51,8 @@ async def _bad_request(_: Request, exc: RequestValidationError) -> JSONResponse:
 
 
 @app.exception_handler(ExtractError)
-async def _bad_file(_: Request, exc: ExtractError) -> JSONResponse:
+@app.exception_handler(AnkiError)
+async def _bad_file(_: Request, exc: ValueError) -> JSONResponse:
     return _error(400, str(exc), "bad_request")
 
 
@@ -101,3 +103,17 @@ async def extract_file(request: Request, filename: str) -> JobCreated:
 async def job_status(job_id: str) -> JobStatus | JSONResponse:
     status = jobs.get(job_id)
     return status if status else _error(404, "This upload has expired. Upload the file again.", "bad_request")
+
+
+@app.post("/anki/import", response_model=AnkiImport)
+async def anki_import(request: Request) -> AnkiImport:
+    """Parses an .apkg (raw request body). Fast enough to answer directly: no Docling, just SQLite."""
+    if int(request.headers.get("content-length") or 0) > MAX_APKG_BYTES:
+        raise AnkiError(f"Anki package is larger than {MAX_APKG_BYTES // (1024 * 1024)} MB.")
+    return AnkiImport(decks=import_apkg(await request.body()))
+
+
+@app.post("/anki/export")
+async def anki_export(req: AnkiExportRequest) -> Response:
+    data = export_apkg(req.deck_name, [c.model_dump() for c in req.cards])
+    return Response(data, media_type="application/octet-stream")

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { dayMonth, daysUntil, plural } from "@/lib/format";
-import type { StoreState } from "@/lib/store";
+import { useAccount, type StoreState } from "@/lib/store";
 import ui from "./ui.module.css";
 
 interface Props {
@@ -16,6 +16,7 @@ interface Props {
 
 export function Rail({ state, now, activeDeckId, children }: Props) {
   const { decks, cards } = state;
+  const account = useAccount();
   const dueCounts = useMemo(() => {
     // Cards created after the last clock tick are due "now" too, so never compare against a stale time.
     const at = Math.max(now.getTime(), Date.now());
@@ -57,6 +58,9 @@ export function Rail({ state, now, activeDeckId, children }: Props) {
         </Link>
       </nav>
       {children}
+      <Link href="/account" className={ui.railAdd}>
+        {account && !account.isGuest ? account.email : "Create account"}
+      </Link>
       {goal?.examDate && (
         <div className={ui.goal}>
           <div className={ui.goalDays}>{plural(daysUntil(goal.examDate, now), "day")} left</div>

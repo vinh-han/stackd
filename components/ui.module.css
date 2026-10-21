@@ -114,6 +114,9 @@
   border-radius: 9px;
   font-size: 13.5px;
   color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .railAdd:hover {

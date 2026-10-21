@@ -3,11 +3,12 @@
 	basic_auth {
 		{$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
 	}
-	# File uploads (PDF, Word, PowerPoint, images) up to 20 MB; every other request up to 1 MB.
-	@upload path /api/extract
-	@other not path /api/extract
+	# Uploads: documents up to 20 MB, Anki packages (often with media) up to 100 MB, export requests
+	# up to 20 MB. Every other request up to 1 MB. The app enforces the exact per-route limits.
+	@upload path /api/extract /api/anki/*
+	@other not path /api/extract /api/anki/*
 	request_body @upload {
-		max_size 20MB
+		max_size 100MB
 	}
 	request_body @other {
 		max_size 1MB

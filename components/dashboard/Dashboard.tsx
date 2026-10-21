@@ -6,7 +6,7 @@ import { dayKey, liveStreak } from "@/lib/streak";
 import { daysUntil, formatWhen, plural } from "@/lib/format";
 import { createSampleData } from "@/lib/sample-data";
 import { topicStats } from "@/lib/scheduler";
-import { store, useStore } from "@/lib/store";
+import { store, useAccount, useStore } from "@/lib/store";
 import type { Deck, StudyCard } from "@/lib/types";
 import { useNow } from "../ClientOnly";
 import { Rail } from "../Rail";
@@ -16,6 +16,7 @@ import styles from "../pages.module.css";
 export function Dashboard() {
   const state = useStore();
   const now = useNow();
+  const account = useAccount();
   const { decks, cards, reviewLogs, streak } = state;
 
   const byDeck = useMemo(() => {
@@ -47,6 +48,9 @@ export function Dashboard() {
             <div className={`${styles.topbar} ${ui.mobileOnly}`}>
               <span className={styles.topbarBrand}>Stackd</span>
               <span className={styles.grow} />
+              <Link href="/account" className={ui.chip}>
+                Account
+              </Link>
               {decks.length > 0 && (
                 <Link href="/add" className={ui.chip}>
                   Add cards
@@ -93,6 +97,16 @@ export function Dashboard() {
                     )}
                   </div>
                 </section>
+
+                {account?.isGuest && cards.length > 0 && (
+                  <div className={styles.notice}>
+                    You&apos;re using a guest account, so your cards live only in this browser.{" "}
+                    <Link href="/account" className={ui.textBtn}>
+                      Create an account
+                    </Link>{" "}
+                    to keep them and study on any device.
+                  </div>
+                )}
 
                 <section className={styles.tiles}>
                   <div className={styles.tile}>

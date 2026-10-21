@@ -89,6 +89,36 @@ class JobStatus(ApiModel):
     code: ErrorCode | None = None
 
 
+class AnkiCard(ApiModel):
+    front: str
+    back: str
+    type: CardType
+    topic: str
+    # ts-fsrs card state for cards Anki had already scheduled; None means start as a new card.
+    srs: dict | None = None
+
+
+class AnkiDeck(ApiModel):
+    name: str
+    cards: list[AnkiCard]
+
+
+class AnkiImport(ApiModel):
+    decks: list[AnkiDeck]
+
+
+class ExportCard(ApiModel):
+    id: str
+    front: str
+    back: str
+    topic: str = ""
+
+
+class AnkiExportRequest(ApiModel):
+    deck_name: str = Field(min_length=1, max_length=200)
+    cards: list[ExportCard] = Field(max_length=20_000)
+
+
 class ErrorResponse(ApiModel):
     error: str
     code: ErrorCode

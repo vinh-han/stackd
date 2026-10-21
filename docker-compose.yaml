@@ -10,7 +10,13 @@
 
 services:
   web:
-    build: .
+    build:
+      context: .
+      # Inlined into the browser bundle, so they are build arguments. Set them in `.env` (Compose reads
+      # `.env`, not `.env.local`). Public values: row-level security guards the data.
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
     image: stackd-web
     restart: unless-stopped
     environment:

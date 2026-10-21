@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type CSSProperties } from "react";
+import { exportAnki } from "@/lib/anki";
 import { formatDue, fromDateInput, plural, toDateInput } from "@/lib/format";
 import { topicStats } from "@/lib/scheduler";
 import { store, useStore } from "@/lib/store";
@@ -23,6 +24,7 @@ export function DeckDetail({ id }: { id: string }) {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<StudyCard | null>(null);
   const [viewing, setViewing] = useState<StudyCard | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const deckCards = useMemo(() => state.cards.filter((c) => c.deckId === id), [state.cards, id]);
   const topics = useMemo(() => topicStats(deckCards).sort((a, b) => a.mastery - b.mastery), [deckCards]);
@@ -90,7 +92,24 @@ export function DeckDetail({ id }: { id: string }) {
                 <Link href={`/add?deck=${deck.id}`} className={ui.outlineBtn}>
                   Add cards
                 </Link>
+                {deckCards.length > 0 && (
+                  <button
+                    type="button"
+                    className={ui.outlineBtn}
+                    onClick={() => {
+                      setExportError(null);
+                      exportAnki(deck, deckCards).catch((err: Error) => setExportError(err.message));
+                    }}
+                  >
+                    Export to Anki
+                  </button>
+                )}
               </div>
+              {exportError && (
+                <div className={`${styles.notice} ${styles.noticeError}`} role="alert">
+                  {exportError}
+                </div>
+              )}
             </section>
 
             <section className={styles.row}>
