@@ -33,7 +33,9 @@
 
   --text: oklch(0.96 0.005 265);
   --text-2: oklch(0.86 0.012 265);
+  --text-soft: oklch(0.80 0.012 265);
   --text-dim: oklch(0.72 0.012 265);
+  --text-quiet: oklch(0.62 0.012 265);
   --text-muted: oklch(0.66 0.012 265);
   --text-faint: oklch(0.58 0.012 265);
   --text-ghost: oklch(0.50 0.012 265);
@@ -44,6 +46,14 @@
   --kbd-border: oklch(0.78 0.012 265);
 
   --scrim: oklch(0.10 0.01 265 / 0.6);
+
+  /* Logo (design 5d). The period takes the deck accent, like Good. */
+  --mark-back: oklch(0.36 0.014 265);
+  --mark-front: oklch(0.96 0.005 265);
+  --mark-glyph: oklch(0.17 0.012 265);
+
+  /* Bottom padding for docks; 0 where the mobile tab bar already covers the safe area. */
+  --safe-bottom: env(safe-area-inset-bottom);
 }
 
 @media (prefers-color-scheme: light) {
@@ -73,7 +83,9 @@
 
     --text: oklch(0.20 0.012 265);
     --text-2: oklch(0.33 0.012 265);
+    --text-soft: oklch(0.40 0.012 265);
     --text-dim: oklch(0.48 0.012 265);
+    --text-quiet: oklch(0.52 0.012 265);
     --text-muted: oklch(0.50 0.012 265);
     --text-faint: oklch(0.55 0.012 265);
     --text-ghost: oklch(0.60 0.012 265);
@@ -84,6 +96,10 @@
     --kbd-border: oklch(0.45 0.012 265);
 
     --scrim: oklch(0.20 0.01 265 / 0.35);
+
+    --mark-back: oklch(0.80 0.008 265);
+    --mark-front: oklch(0.20 0.012 265);
+    --mark-glyph: oklch(1 0 0);
   }
 }
 
@@ -96,11 +112,13 @@
   --easy-border: oklch(0.40 0.05 var(--accent-h));
   --easy-fg: oklch(0.86 0.05 var(--accent-h));
   --easy-sub: oklch(0.72 0.06 var(--accent-h));
+  --brand-dot: oklch(0.72 0.11 var(--accent-h));
 }
 
 @media (prefers-color-scheme: light) {
   :root,
   [data-accent] {
+    --brand-dot: oklch(0.55 0.11 var(--accent-h));
     --good-bg: oklch(0.52 0.11 var(--accent-h));
     --good-fg: oklch(0.99 0.01 var(--accent-h));
     --good-sub: oklch(0.92 0.03 var(--accent-h));

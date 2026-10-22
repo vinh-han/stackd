@@ -2,31 +2,31 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { isDue } from "@/lib/scheduler";
+import { plural } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import { ReviewScreen, type ReviewScope } from "./ReviewScreen";
 
 /**
- * Resolves ?deck= to a deck: the requested one, else the first with cards due, else the first.
- * The choice is pinned on mount, so rating the last due card does not hop to another deck.
- * A scope (one topic, or picked cards) only applies to the deck it was made for.
+ * Names what is being reviewed for the header: "All decks", a deck, a topic, or "3 selected cards".
+ * The title is fixed on mount, so it does not change as cards are rated or edited.
  */
-export function ReviewRoute({ deckId, scope }: { deckId?: string; scope?: ReviewScope }) {
+export function ReviewRoute({ scope, from }: { scope: ReviewScope; from: string }) {
   const { decks, cards } = useStore();
   const router = useRouter();
-  const [pinnedId] = useState(() => {
-    const now = new Date();
-    return (
-      decks.find((d) => d.id === deckId) ??
-      decks.find((d) => cards.some((c) => c.deckId === d.id && isDue(c, now))) ??
-      decks[0]
-    )?.id;
+  const deck = scope.deckId ? decks.find((d) => d.id === scope.deckId) : undefined;
+  const missing = decks.length === 0 || (!!scope.deckId && !deck);
+
+  const [title] = useState(() => {
+    if (scope.cardIds) {
+      const known = new Set(cards.map((c) => c.id));
+      return plural(scope.cardIds.filter((id) => known.has(id)).length, "selected card");
+    }
+    return scope.topic ?? deck?.name ?? "All decks";
   });
-  const deck = decks.find((d) => d.id === pinnedId);
 
   useEffect(() => {
-    if (!deck) router.replace("/");
-  }, [deck, router]);
+    if (missing) router.replace(from);
+  }, [missing, from, router]);
 
-  return deck ? <ReviewScreen deck={deck} scope={deck.id === deckId ? scope : undefined} /> : null;
+  return missing ? null : <ReviewScreen scope={scope} title={title} from={from} />;
 }

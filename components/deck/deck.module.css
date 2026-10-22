@@ -1,57 +1,4 @@
-/* Deck overview (design turn 2) and the top bar shared with All cards (turn 3). */
-
-/* ---------- Top bar ---------- */
-
-.topbar {
-  height: 60px;
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 0 28px;
-  border-bottom: 1px solid var(--line);
-}
-
-.crumb {
-  font-weight: 500;
-  font-size: 13.5px;
-  color: var(--text-dim);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-a.crumb:hover {
-  color: var(--text);
-}
-
-.crumbSep {
-  font-size: 13px;
-  color: var(--text-ghost);
-}
-
-.crumbHere {
-  min-width: 0;
-  font-weight: 500;
-  font-size: 13.5px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.crumbCount {
-  font: 400 12px var(--font-mono), monospace;
-  color: var(--text-faint);
-}
-
-/* Mobile header: back link on the left, one action on the right. */
-.mHead {
-  flex: none;
-  display: flex;
-  align-items: center;
-  padding: calc(6px + env(safe-area-inset-top)) 16px 10px;
-}
+/* Deck Overview tab (design turn 2) and the exam block on the Settings tab. Header and tabs: frame.module.css. */
 
 /* Pair with ui.tap: the link looks like text but takes a 44px tap. */
 .mBack {
@@ -60,18 +7,13 @@ a.crumb:hover {
   color: var(--text-dim);
 }
 
-.mHeadChip {
-  padding: 8px 12px;
-  font-size: 12px;
-}
-
 /* ---------- Layout ---------- */
 
 .overview {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  padding: 8px 18px 24px;
+  gap: 18px;
+  padding: 20px 20px 24px;
 }
 
 @media (min-width: 900px) {
@@ -97,38 +39,13 @@ a.crumb:hover {
 .mainCol {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 18px;
   min-width: 0;
 }
 
 @media (min-width: 900px) {
   .mainCol {
     gap: 30px;
-  }
-}
-
-.title {
-  font-size: 27px;
-  overflow-wrap: anywhere;
-}
-
-@media (min-width: 900px) {
-  .title {
-    font-size: 34px;
-  }
-}
-
-.meta {
-  margin-top: 6px;
-  font: 400 10.5px var(--font-mono), monospace;
-  letter-spacing: 0.08em;
-  color: var(--text-faint);
-}
-
-@media (min-width: 900px) {
-  .meta {
-    margin-top: 8px;
-    font-size: 11px;
   }
 }
 
@@ -189,12 +106,6 @@ a.crumb:hover {
   gap: 10px;
   padding: 13px 22px;
   font-size: 15px;
-}
-
-.browseBtn {
-  padding: 12px 18px;
-  border-color: var(--border-strong);
-  color: var(--text-2);
 }
 
 /* ---------- Status bar ---------- */
@@ -278,7 +189,7 @@ a.crumb:hover {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 @media (min-width: 900px) {
@@ -291,7 +202,13 @@ a.crumb:hover {
   margin: 0;
   font: 400 10.5px var(--font-mono), monospace;
   letter-spacing: 0.12em;
-  color: var(--text-faint);
+  color: var(--text-quiet);
+}
+
+@media (min-width: 900px) {
+  .label {
+    color: var(--text-faint);
+  }
 }
 
 .hint {
@@ -307,11 +224,11 @@ a.crumb:hover {
 
 .topicRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 70px 40px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   min-height: 44px;
-  padding: 11px 0;
+  padding: 14px 0;
   border-bottom: 1px solid var(--line);
 }
 
@@ -339,8 +256,9 @@ a.crumb:hover {
 
 .topicName {
   min-width: 0;
-  font-size: 14px;
-  color: var(--text-2);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -351,12 +269,6 @@ a.crumb:hover {
   color: var(--text);
 }
 
-.topicDue {
-  margin-left: 4px;
-  font: 400 11.5px var(--font-mono), monospace;
-  color: var(--text-faint);
-}
-
 .topicCount {
   font: 400 12px var(--font-mono), monospace;
   color: var(--text-faint);
@@ -364,8 +276,21 @@ a.crumb:hover {
 
 .topicPct {
   text-align: right;
-  font: 400 12px var(--font-mono), monospace;
-  color: var(--text-2);
+  font: 400 13px var(--font-mono), monospace;
+  color: var(--text-soft);
+}
+
+@media (min-width: 900px) {
+  .topicName {
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--text-2);
+  }
+
+  .topicPct {
+    font-size: 12px;
+    color: var(--text-2);
+  }
 }
 
 .topicAction {
@@ -483,123 +408,17 @@ a.crumb:hover {
   font-size: 12.5px;
 }
 
-.info {
-  display: flex;
-  flex-direction: column;
-  padding: 6px 18px;
-  border-radius: 14px;
-  border: 1px solid var(--line-soft);
-}
-
-.infoRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  min-height: 44px;
-  padding: 8px 0;
-  font-size: 13px;
-  color: var(--text-dim);
-}
-
-@media (min-width: 900px) {
-  .infoRow {
-    min-height: 0;
-    padding: 12px 0;
-  }
-}
-
-.infoRow + .infoLabel {
-  border-top: 1px solid var(--line);
-}
-
-.infoValue {
-  color: var(--text);
-}
-
-.infoValue:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.langInput {
-  width: 120px;
-  padding: 6px 10px;
-  font-size: 13px;
-}
-
-.infoLabel {
-  padding: 12px 0 4px;
-  font: 400 10.5px var(--font-mono), monospace;
-  letter-spacing: 0.12em;
-  color: var(--text-faint);
-}
-
-.sourceRow {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 7px 0;
-  font-size: 13px;
-  color: var(--text-2);
-}
-
-.sourceRow:last-child {
-  padding-bottom: 12px;
-}
-
-.sourceName {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sourceCount {
-  font: 400 11.5px var(--font-mono), monospace;
-  color: var(--text-faint);
-}
-
-.deleteBtn {
-  align-self: flex-start;
-  padding: 4px 2px;
-  font-size: 12.5px;
-}
-
 /* ---------- Mobile dock ---------- */
 
 .dock {
   flex: none;
   display: flex;
   flex-direction: column;
-  padding: 12px 16px calc(8px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line);
+  padding: 10px 20px calc(12px + var(--safe-bottom));
 }
 
 .dockBtn {
   height: 52px;
   border-radius: 16px;
   font-size: 16px;
-}
-
-.dockLink {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--text-2);
-}
-
-/* ---------- Settings sheet (mobile) ---------- */
-
-.sheetActions {
-  display: flex;
-  gap: 8px;
-}
-
-.sheetActions > * {
-  flex: 1;
-  min-height: 44px;
 }

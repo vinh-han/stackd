@@ -1,0 +1,56 @@
+/* Design 5d. The mark's bottom edge sits on the wordmark's baseline. */
+
+.logo {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--gap);
+  flex: none;
+}
+
+.mark {
+  position: relative;
+  flex: none;
+  width: var(--mark);
+  height: var(--mark);
+}
+
+.back,
+.front {
+  position: absolute;
+  width: var(--square);
+  height: var(--square);
+  border-radius: var(--radius);
+}
+
+.back {
+  left: var(--offset);
+  top: 0;
+  background: var(--mark-back);
+}
+
+.front {
+  left: 0;
+  top: var(--offset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mark-front);
+  font: 700 var(--glyph) / 1 var(--font-sans), sans-serif;
+  color: var(--mark-glyph);
+}
+
+.solo {
+  top: 0;
+}
+
+.word {
+  /* Line box is 1em; pulling it down by the descender puts the baseline on the mark's bottom edge. */
+  margin-bottom: -0.14em;
+  font: 700 var(--word) / 1 var(--font-sans), sans-serif;
+  letter-spacing: -0.04em;
+  color: var(--text);
+}
+
+.dot {
+  color: var(--brand-dot);
+}

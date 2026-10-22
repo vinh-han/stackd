@@ -1,0 +1,290 @@
+/* Today (designs 4b desktop, 4d phones). */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 14px 20px 32px;
+}
+
+@media (min-width: 900px) {
+  .page {
+    max-width: 1100px;
+    gap: 28px;
+    padding: 40px 48px 56px;
+  }
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 900px) {
+  .head {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+}
+
+.headText {
+  flex: 1;
+  min-width: 0;
+}
+
+.date {
+  margin-bottom: 8px;
+  font: 400 11px var(--font-mono), monospace;
+  letter-spacing: 0.1em;
+  color: var(--text-quiet);
+}
+
+.h1 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.lede {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+@media (min-width: 900px) {
+  .h1 {
+    font-size: 34px;
+  }
+
+  .lede {
+    font-size: 15px;
+  }
+}
+
+.reviewAll {
+  height: 52px;
+  border-radius: 16px;
+  font-size: 16px;
+}
+
+@media (min-width: 900px) {
+  .reviewAll {
+    height: auto;
+    gap: 10px;
+    padding: 13px 22px;
+    border-radius: 12px;
+    font-size: 15px;
+  }
+}
+
+/* ---------- Desktop ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
+  gap: 24px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  margin: 0;
+  font: 400 10px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+  color: var(--text-quiet);
+}
+
+.deckRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.deckIdle {
+  padding: 16px 18px;
+  background: none;
+  border: 1px solid var(--line);
+}
+
+.deckText {
+  flex: 1;
+  min-width: 0;
+}
+
+.deckName {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deckSum {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.deckIdle .deckName {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-soft);
+}
+
+.deckIdle .deckSum {
+  color: var(--text-quiet);
+}
+
+.open {
+  flex: none;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.open:hover {
+  color: var(--text);
+}
+
+.deckIdle .open {
+  color: var(--text-dim);
+}
+
+.reviewBtn {
+  flex: none;
+  padding: 9px 15px;
+  border-radius: 10px;
+  background: var(--raised);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+  transition: filter 80ms;
+}
+
+.reviewBtn:hover {
+  filter: brightness(1.15);
+}
+
+/* The side column is 12px apart; its label sits 2px further from the box than the deck list's. */
+.labelSide {
+  margin-bottom: 2px;
+}
+
+.fixBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--divider);
+}
+
+.fixText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.fixCard {
+  font-weight: 500;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.fixCard:hover,
+.fixLink:hover {
+  text-decoration: underline;
+}
+
+.fixLink {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.exam {
+  margin-top: 2px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.examDays {
+  font: 500 17px var(--font-mono), monospace;
+  color: var(--text);
+}
+
+.examSub {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* ---------- Phones ---------- */
+
+.mList {
+  display: flex;
+  flex-direction: column;
+}
+
+.mRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mRow:last-child {
+  border-bottom: 0;
+}
+
+.mText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mName {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mSub {
+  font-size: 12.5px;
+  color: var(--text-quiet);
+}
+
+.mCount {
+  font: 500 14px var(--font-mono), monospace;
+  color: var(--text);
+}
+
+.mCountZero {
+  color: var(--text-ghost);
+}
+
+.mOpen {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-soft);
+}

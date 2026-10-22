@@ -5,7 +5,7 @@ import "./globals.css";
 // Be Vietnam Pro is built for Vietnamese: stacked tone marks render without clipping.
 const sans = Be_Vietnam_Pro({
   subsets: ["latin", "latin-ext", "vietnamese"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"], // 700 for the logo only
   variable: "--font-sans",
 });
 
@@ -19,6 +19,13 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Stackd",
   description: "Paste anything. Get cards. Review daily.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {

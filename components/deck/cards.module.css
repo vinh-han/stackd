@@ -44,7 +44,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  padding: 18px 28px 14px;
+  padding: 18px 32px 14px;
 }
 
 .search {
@@ -143,7 +143,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 28px 28px;
+  padding: 0 32px 28px;
 }
 
 .listBulk {
@@ -667,7 +667,20 @@
   color: var(--text);
 }
 
-/* ---------- Rail: jump to topic ---------- */
+/* ---------- Sidebar: jump to topic ---------- */
+
+.jumpGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jumpLabel {
+  padding: 0 10px 8px;
+  font: 400 10px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+  color: var(--text-quiet);
+}
 
 .jump {
   display: flex;
@@ -703,22 +716,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 10px 20px 14px;
-}
-
-.mTitleRow {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.mTitle {
-  font-size: 26px;
-}
-
-.mCount {
-  font: 400 13px var(--font-mono), monospace;
-  color: var(--text-faint);
+  padding: 16px 20px 14px;
 }
 
 .mSearchRow {
@@ -747,11 +745,9 @@
   color: var(--text-2);
 }
 
-.mHead {
-  padding: calc(6px + env(safe-area-inset-top)) 20px 4px;
-}
-
 .mSelect {
+  flex: none;
+  padding: 0 4px;
   color: var(--text-2);
 }
 
@@ -852,7 +848,7 @@
 
 .mDock {
   flex: none;
-  padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
+  padding: 12px 20px calc(16px + var(--safe-bottom));
 }
 
 .sheetChips {

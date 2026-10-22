@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Grade } from "ts-fsrs";
 import { formatWhen, daysUntil, plural, startOfDay } from "@/lib/format";
+import { addHref, deckHref } from "@/lib/links";
 import { GRADES, RELEARN_WINDOW_MS, isDue, previewIntervals, topicStats, type TopicStat } from "@/lib/scheduler";
 import { store, useStore } from "@/lib/store";
 import type { Deck, StudyCard } from "@/lib/types";
 import { EditSheet } from "../EditSheet";
-import { Rail } from "../Rail";
+import { AppShell } from "../shell/AppShell";
 import { SourceSheet } from "../SourceSheet";
 import ui from "../ui.module.css";
 import styles from "./review.module.css";
@@ -25,37 +27,43 @@ interface Session {
   startedAt: number;
 }
 
-/** Narrows a session: one topic's due cards, or exactly the picked cards, due or not (from All cards). */
+/**
+ * What a session covers: every deck (nothing set), one deck, one topic of a deck,
+ * or exactly the picked cards, due or not (from the Cards tab or search).
+ */
 export interface ReviewScope {
+  deckId?: string;
   topic?: string;
   cardIds?: string[];
 }
 
-function cardsDue(cards: StudyCard[], deckId: string, now: Date, scope: ReviewScope): string[] {
+const inScope = (c: StudyCard, scope: ReviewScope) =>
+  (!scope.deckId || c.deckId === scope.deckId) && (!scope.topic || c.topic === scope.topic);
+
+function cardsDue(cards: StudyCard[], now: Date, scope: ReviewScope): string[] {
   if (scope.cardIds) {
     const byId = new Map(cards.map((c) => [c.id, c]));
     return scope.cardIds.filter((id) => {
       const c = byId.get(id);
-      return c && c.deckId === deckId && !c.suspended;
+      return c && inScope(c, scope) && !c.suspended;
     });
   }
   return cards
-    .filter((c) => c.deckId === deckId && isDue(c, now) && (!scope.topic || c.topic === scope.topic))
+    .filter((c) => inScope(c, scope) && isDue(c, now))
     .sort((a, b) => a.srs.due.getTime() - b.srs.due.getTime())
     .map((c) => c.id);
 }
 
 /** Cards due within the next week, skipping any already reviewed today. */
-function cardsAhead(cards: StudyCard[], deckId: string, now: Date, scope: ReviewScope): string[] {
+function cardsAhead(cards: StudyCard[], now: Date, scope: ReviewScope): string[] {
   if (scope.cardIds) return [];
   const limit = now.getTime() + AHEAD_WINDOW_MS;
   const today = startOfDay(now);
   return cards
     .filter(
       (c) =>
-        c.deckId === deckId &&
+        inScope(c, scope) &&
         !c.suspended &&
-        (!scope.topic || c.topic === scope.topic) &&
         c.srs.due > now &&
         c.srs.due.getTime() <= limit &&
         (!c.srs.last_review || c.srs.last_review.getTime() < today),
@@ -64,27 +72,42 @@ function cardsAhead(cards: StudyCard[], deckId: string, now: Date, scope: Review
     .map((c) => c.id);
 }
 
-function newSession(cards: StudyCard[], deckId: string, now: Date, scope: ReviewScope, ahead = false): Session {
-  const queue = ahead ? cardsAhead(cards, deckId, now, scope) : cardsDue(cards, deckId, now, scope);
+function newSession(cards: StudyCard[], now: Date, scope: ReviewScope, ahead = false): Session {
+  const queue = ahead ? cardsAhead(cards, now, scope) : cardsDue(cards, now, scope);
   return { queue, total: queue.length, done: 0, reviewed: 0, startedAt: now.getTime() };
 }
 
-export function ReviewScreen({ deck, scope = {} }: { deck: Deck; scope?: ReviewScope }) {
+interface Props {
+  scope: ReviewScope;
+  /** Says what is being reviewed: "All decks", a deck, a topic, "3 selected cards". */
+  title: string;
+  /** Where Esc and Back return to. */
+  from: string;
+}
+
+export function ReviewScreen({ scope, title, from }: Props) {
   const state = useStore();
-  const { cards } = state;
+  const { cards, decks } = state;
+  const router = useRouter();
 
   const [now, setNow] = useState(() => new Date());
-  const [session, setSession] = useState<Session>(() => newSession(cards, deck.id, now, scope));
+  const [session, setSession] = useState<Session>(() => newSession(cards, now, scope));
   const [flipped, setFlipped] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [sheet, setSheet] = useState<"edit" | "source" | null>(null);
   const [undo, setUndo] = useState<StudyCard | null>(null);
   const [lastTopic, setLastTopic] = useState<string | null>(null);
 
-  const deckCards = useMemo(() => cards.filter((c) => c.deckId === deck.id), [cards, deck.id]);
   const byId = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
   // Skip queued cards deleted elsewhere (deck page, another tab).
   const current = session.queue.map((id) => byId.get(id)).find((c) => c !== undefined);
+  const [lastDeckId, setLastDeckId] = useState<string | undefined>();
+  // A session can mix decks: accent, language and topics follow the card on screen, then the last one rated.
+  const deck: Deck =
+    decks.find((d) => d.id === (current?.deckId ?? scope.deckId ?? lastDeckId)) ??
+    decks.find((d) => cards.some((c) => c.deckId === d.id)) ??
+    decks[0];
+  const deckCards = useMemo(() => cards.filter((c) => c.deckId === deck.id), [cards, deck.id]);
   const intervals = useMemo(() => (current ? previewIntervals(current.srs, now) : null), [current, now]);
 
   const topics = useMemo(() => topicStats(deckCards), [deckCards]);
@@ -115,6 +138,7 @@ export function ReviewScreen({ deck, scope = {} }: { deck: Deck; scope?: ReviewS
       }));
       setNow(t);
       setLastTopic(current.topic);
+      setLastDeckId(current.deckId);
       setUndo(null);
       resetCard();
     },
@@ -140,7 +164,7 @@ export function ReviewScreen({ deck, scope = {} }: { deck: Deck; scope?: ReviewS
   const reviewAhead = () => {
     const t = new Date();
     setNow(t);
-    setSession(newSession(cards, deck.id, t, scope, true));
+    setSession(newSession(cards, t, scope, true));
     resetCard();
   };
 
@@ -150,11 +174,17 @@ export function ReviewScreen({ deck, scope = {} }: { deck: Deck; scope?: ReviewS
     return () => clearTimeout(timer);
   }, [undo]);
 
-  // Keyboard first: Space flips, 1 to 4 rates.
+  // Keyboard first: Space flips, 1 to 4 rates, Esc goes back to where the review started.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (sheet || !current || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (sheet || e.metaKey || e.ctrlKey || e.altKey) return;
       if ((e.target as HTMLElement).closest("input, textarea, select, [contenteditable]")) return;
+      if (e.key === "Escape" && !document.querySelector('[aria-modal="true"]')) {
+        e.preventDefault();
+        router.push(from);
+        return;
+      }
+      if (!current) return;
       if (e.key === " ") {
         e.preventDefault();
         if (!flipped) flip();
@@ -168,7 +198,7 @@ export function ReviewScreen({ deck, scope = {} }: { deck: Deck; scope?: ReviewS
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [sheet, current, flipped, flip, onRate]);
+  }, [sheet, current, flipped, flip, onRate, router, from]);
 
   // Long answers clamp; Expand only appears when the clamp actually cuts text.
   const answerRef = useRef<HTMLParagraphElement>(null);
@@ -184,34 +214,42 @@ export function ReviewScreen({ deck, scope = {} }: { deck: Deck; scope?: ReviewS
   }, [current?.id, current?.back, flipped, expanded]);
 
   const progress = !current || session.total === 0 ? 1 : session.done / session.total;
-  const accentStyle = { "--accent-h": deck.accentHue } as CSSProperties;
   const closeSheet = useCallback(() => setSheet(null), []);
 
   return (
-    <div className={ui.app} style={accentStyle} data-accent>
-      <Rail state={state} now={now} activeDeckId={deck.id}>
-        {current && topics.length > 0 && (
-          <div className={ui.railGroup}>
-            <div className={ui.railLabel}>TOPICS</div>
+    <AppShell
+      section="review"
+      activeDeckId={scope.deckId}
+      accentHue={deck.accentHue}
+      mobileTop={false}
+      tabs={false}
+      sidebarExtra={
+        current &&
+        topics.length > 0 && (
+          <div className={styles.railTopics}>
+            <div className={styles.railLabel}>TOPICS{scope.deckId ? "" : `, ${deck.name.toUpperCase()}`}</div>
             {topics.map((t) => (
-              <div key={t.name} className={ui.topicItem}>
+              <div key={t.name} className={styles.railTopic}>
                 <span>{t.name}</span>
-                <span className={ui.topicValue}>{t.mastery}%</span>
+                <span className={styles.railTopicValue}>{t.mastery}%</span>
               </div>
             ))}
           </div>
-        )}
-      </Rail>
-
-      <main className={ui.main}>
+        )
+      }
+    >
         <header className={styles.header}>
-          <Link href="/" className={styles.back} aria-label="Back">
+          <Link href={from} className={styles.back} aria-label="Back">
             Back
           </Link>
           <div className={styles.titleBlock}>
-            <Link href={`/deck/${deck.id}`} className={styles.title}>
-              {deck.name}
-            </Link>
+            {scope.deckId && !scope.topic && !scope.cardIds ? (
+              <Link href={deckHref(scope.deckId)} className={styles.title}>
+                {title}
+              </Link>
+            ) : (
+              <span className={styles.title}>{title}</span>
+            )}
             <div className={styles.dueCount}>{current ? `${session.done} / ${session.total} due` : "0 due"}</div>
           </div>
           <div className={styles.spacer} />
@@ -329,11 +367,10 @@ export function ReviewScreen({ deck, scope = {} }: { deck: Deck; scope?: ReviewS
             cards={deckCards}
             topics={topics}
             focusTopic={lastTopic}
-            aheadCount={cardsAhead(cards, deck.id, now, scope).length}
+            aheadCount={cardsAhead(cards, now, scope).length}
             onReviewAhead={reviewAhead}
           />
         )}
-      </main>
 
       {sheet === "edit" && current && (
         <EditSheet
@@ -357,7 +394,7 @@ export function ReviewScreen({ deck, scope = {} }: { deck: Deck; scope?: ReviewS
           </button>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }
 
@@ -384,7 +421,7 @@ function QueueClear({ deck, session, now, cards, topics, focusTopic, aheadCount,
   const focus = topics.find((t) => t.name === focusTopic) ?? topics[0];
   const weakest = topics.length > 1 ? topics.reduce((a, b) => (b.mastery < a.mastery ? b : a)) : undefined;
   const weakestSource = weakest && cards.find((c) => c.topic === weakest.name)?.sourceRef;
-  const addHref = `/add?deck=${deck.id}`;
+  const add = addHref(deck.id);
 
   return (
     <>
@@ -395,7 +432,7 @@ function QueueClear({ deck, session, now, cards, topics, focusTopic, aheadCount,
             <h1 className={styles.clearTitle}>Queue clear</h1>
             <p className={styles.clearText}>{summary}</p>
             <div className={`${styles.clearActions} ${ui.desktopOnly}`}>
-              <Link href={addHref} className={ui.primaryBtn}>
+              <Link href={add} className={ui.primaryBtn}>
                 Add cards
               </Link>
               {aheadCount > 0 && (
@@ -424,7 +461,7 @@ function QueueClear({ deck, session, now, cards, topics, focusTopic, aheadCount,
               )}
             </div>
             {weakest && (
-              <Link href={addHref} className={styles.weak}>
+              <Link href={add} className={styles.weak}>
                 <div className={styles.weakTitle}>Weakest topic: {weakest.name}</div>
                 <div className={styles.weakBody}>
                   {plural(weakest.count, "card")}, {weakest.mastery}% mastery.
@@ -438,7 +475,7 @@ function QueueClear({ deck, session, now, cards, topics, focusTopic, aheadCount,
 
       <div className={`${styles.dock} ${ui.mobileOnly}`}>
         <div className={styles.slot}>
-          <Link href={addHref} className={styles.showAnswer}>
+          <Link href={add} className={styles.showAnswer}>
             Add cards
           </Link>
         </div>

@@ -9,7 +9,7 @@ import { store, useStore, type NewCard } from "@/lib/store";
 import type { Deck, StudyCard } from "@/lib/types";
 import { useNow } from "../ClientOnly";
 import { AnkiImport } from "./AnkiImport";
-import { Rail } from "../Rail";
+import { AppShell } from "../shell/AppShell";
 import ui from "../ui.module.css";
 import styles from "../pages.module.css";
 
@@ -33,8 +33,9 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
   const now = useNow();
   const { decks, cards } = state;
 
+  // ?deck=new comes from "New deck" in the sidebar.
   const [deckChoice, setDeckChoice] = useState(() =>
-    decks.some((d) => d.id === initialDeckId) ? initialDeckId! : decks[0]?.id ?? NEW,
+    initialDeckId === "new" ? NEW : decks.some((d) => d.id === initialDeckId) ? initialDeckId! : (decks[0]?.id ?? NEW),
   );
   const [newDeckName, setNewDeckName] = useState("");
   const [title, setTitle] = useState("");
@@ -135,16 +136,9 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
   );
 
   return (
-    <div className={ui.app}>
-      <Rail state={state} now={now} activeDeckId={deck?.id} />
-      <main className={ui.main}>
+    <AppShell section="add" activeDeckId={deck?.id}>
         <div className={styles.scroll}>
           <div className={styles.page}>
-            <div className={styles.topbar}>
-              <Link href="/" className={styles.topbarBack}>
-                Back
-              </Link>
-            </div>
 
             {phase.kind === "done" ? (
               <Result phase={phase} created={created} decks={decks} onMore={() => setPhase({ kind: "idle" })} />
@@ -309,8 +303,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
             )}
           </div>
         </div>
-      </main>
-    </div>
+    </AppShell>
   );
 }
 

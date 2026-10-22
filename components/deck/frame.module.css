@@ -1,0 +1,154 @@
+/* Deck header with tabs: underlined tabs on desktop (design 4c), a segmented control on phones (4e). */
+
+.head {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: calc(8px + env(safe-area-inset-top)) 20px 0;
+}
+
+@media (min-width: 900px) {
+  .head {
+    gap: 14px;
+    padding: 22px 32px 0;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-quiet);
+}
+
+.crumbLink:hover,
+a.crumbHere:hover {
+  color: var(--text);
+}
+
+.crumbHere {
+  min-width: 0;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mBack {
+  align-self: flex-start;
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.2;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 900px) {
+  .title {
+    font-size: 28px;
+  }
+}
+
+.review {
+  flex: none;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: var(--primary-bg);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--primary-fg);
+  transition: filter 80ms;
+}
+
+.review:hover {
+  filter: brightness(1.1);
+}
+
+/* ---------- Desktop tabs ---------- */
+
+.tabs {
+  display: flex;
+  gap: 26px;
+}
+
+.tab {
+  padding-bottom: 12px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tabOn {
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--text);
+  color: var(--text);
+}
+
+.tabCount {
+  margin-left: 5px;
+  font: 400 12px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+.tabOn .tabCount {
+  color: var(--text-quiet);
+}
+
+/* ---------- Phone segments ---------- */
+
+.segments {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.segment {
+  flex: 1;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.segmentMore {
+  flex: none;
+  width: 44px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.segmentOn {
+  background: var(--track-2);
+  font-weight: 600;
+  color: var(--text);
+}

@@ -7,7 +7,8 @@ import { formatWhen, plural } from "@/lib/format";
 import { previewIntervals } from "@/lib/scheduler";
 import { auth, useAccount, useStore, type StoreState } from "@/lib/store";
 import { useIsDesktop, useNow } from "../ClientOnly";
-import { Rail } from "../Rail";
+import { Logo } from "../Logo";
+import { AppShell } from "../shell/AppShell";
 import ui from "../ui.module.css";
 import pages from "../pages.module.css";
 import styles from "./account.module.css";
@@ -109,16 +110,9 @@ export function AccountPage({ mode }: { mode: AccountMode }) {
 
   if (signedIn) {
     return (
-      <div className={ui.app}>
-        <Rail state={state} now={now} />
-        <main className={ui.main}>
+      <AppShell section="account">
           <div className={pages.scroll}>
             <div className={pages.page}>
-              <div className={pages.topbar}>
-                <Link href="/" className={pages.topbarBack}>
-                  Back
-                </Link>
-              </div>
               <section>
                 <h1 className={pages.h1}>Account</h1>
                 <p className={pages.lede}>
@@ -132,8 +126,7 @@ export function AccountPage({ mode }: { mode: AccountMode }) {
               </section>
             </div>
           </div>
-        </main>
-      </div>
+      </AppShell>
     );
   }
 
@@ -296,8 +289,8 @@ function AuthShell({ children, panel, mobilePanel, note }: ShellProps) {
   return (
     <div className={styles.auth}>
       <div className={styles.formCol}>
-        <Link href="/" className={`${ui.brand} ${ui.desktopOnly}`}>
-          Stackd
+        <Link href="/" className={ui.desktopOnly} aria-label="Stackd home">
+          <Logo size={24} wordmark={18} />
         </Link>
         {mobilePanel && <div className={`${styles.mPanel} ${ui.mobileOnly}`}>{mobilePanel}</div>}
         {children}

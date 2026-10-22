@@ -1,14 +1,7 @@
-import type { Metadata } from "next";
-import { ClientOnly } from "@/components/ClientOnly";
-import { DeckDetail } from "@/components/deck/DeckDetail";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Deck | Stackd" };
-
+/** The deck's home is its Overview tab; every tab has its own URL. */
 export default async function DeckPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return (
-    <ClientOnly>
-      <DeckDetail id={id} />
-    </ClientOnly>
-  );
+  redirect(`/deck/${id}/overview`);
 }

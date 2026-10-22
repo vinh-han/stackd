@@ -688,3 +688,35 @@ button.source:hover {
     line-height: 1.5;
   }
 }
+
+/* ---------- Sidebar: topics of the deck on screen ---------- */
+
+.railTopics {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.railLabel {
+  padding: 0 10px 8px;
+  font: 400 10px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+  color: var(--text-quiet);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.railTopic {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.railTopicValue {
+  font: 400 12px var(--font-mono), monospace;
+  color: var(--text-muted);
+}

@@ -1,0 +1,298 @@
+/* Search: a dialog on desktop (design 4c), full screen above the tab bar on phones (4f). */
+
+.scrim {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: calc(60px + max(24px, env(safe-area-inset-bottom)));
+  z-index: 25;
+  display: flex;
+  background: var(--bg);
+}
+
+/* Review mode has no tab bar to leave room for. */
+.noTabs {
+  bottom: 0;
+}
+
+.panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(8px + env(safe-area-inset-top)) 20px 12px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--text-dim);
+  background: var(--field);
+  font-size: 15.5px;
+  color: var(--text);
+}
+
+.input:focus {
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--text-faint);
+}
+
+.esc {
+  display: none;
+}
+
+.cancel {
+  flex: none;
+  min-height: 44px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.note {
+  flex: none;
+  padding: 0 20px 8px;
+  font-size: 12px;
+  color: var(--text-quiet);
+}
+
+.results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 16px;
+}
+
+.label {
+  padding: 14px 0 6px;
+  font: 400 10px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+  color: var(--text-quiet);
+}
+
+.labelGap {
+  padding-top: 20px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.front {
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.back {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.seeAll {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.nameRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.name {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.nameMeta {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.empty {
+  padding: 20px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.foot {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .scrim {
+    bottom: 0;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 96px;
+    background: var(--scrim);
+  }
+
+  .panel {
+    flex: none;
+    width: 620px;
+    max-height: calc(100dvh - 140px);
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 24px 60px oklch(0.05 0.01 265 / 0.6);
+    overflow: hidden;
+  }
+
+  .head {
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--track-2);
+  }
+
+  .input {
+    height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    font-weight: 500;
+    font-size: 17px;
+  }
+
+  .esc {
+    display: block;
+    padding: 2px 6px;
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    font: 400 10.5px var(--font-mono), monospace;
+    color: var(--text-muted);
+  }
+
+  .cancel,
+  .note {
+    display: none;
+  }
+
+  .results {
+    gap: 2px;
+    padding: 10px 8px;
+  }
+
+  .results:empty {
+    display: none;
+  }
+
+  .label {
+    padding: 8px 12px 4px;
+  }
+
+  .labelGap {
+    padding-top: 12px;
+  }
+
+  .item {
+    gap: 3px;
+    padding: 11px 12px;
+    border-bottom: 0;
+    border-radius: 10px;
+  }
+
+  .itemOn {
+    background: var(--raised);
+  }
+
+  .front {
+    font-size: 14px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .back {
+    margin-top: 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .meta {
+    margin-top: 0;
+    font: 400 11px var(--font-mono), monospace;
+  }
+
+  .item:has(.seeAll) {
+    padding: 6px 12px;
+  }
+
+  .seeAll {
+    font-size: 12.5px;
+  }
+
+  .item:has(.nameRow) {
+    padding: 10px 12px;
+  }
+
+  .nameRow {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .name {
+    font-size: 14px;
+  }
+
+  .nameMeta {
+    flex: none;
+    font: 400 12px var(--font-mono), monospace;
+    color: var(--text-quiet);
+  }
+
+  .empty {
+    padding: 12px;
+  }
+
+  .foot {
+    flex: none;
+    display: flex;
+    gap: 18px;
+    padding: 11px 18px;
+    border-top: 1px solid var(--track-2);
+    font: 400 11px var(--font-mono), monospace;
+    color: var(--text-faint);
+  }
+}

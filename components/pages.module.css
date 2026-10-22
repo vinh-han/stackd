@@ -23,27 +23,6 @@
   }
 }
 
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.topbarBrand {
-  font-weight: 600;
-  font-size: 17px;
-}
-
-.topbarBack {
-  font-weight: 500;
-  font-size: 13.5px;
-  color: var(--text-dim);
-}
-
-.topbarBack:hover {
-  color: var(--text);
-}
-
 .grow {
   flex: 1;
 }
@@ -60,20 +39,6 @@
   .h1 {
     font-size: 34px;
   }
-}
-
-.titleInput {
-  width: 100%;
-  padding: 2px 0;
-  border: 0;
-  border-bottom: 1px solid transparent;
-  background: none;
-}
-
-.titleInput:hover,
-.titleInput:focus {
-  outline: none;
-  border-bottom-color: var(--border);
 }
 
 .lede {
@@ -96,116 +61,6 @@
   font: 400 10.5px var(--font-mono), monospace;
   letter-spacing: 0.12em;
   color: var(--text-faint);
-}
-
-/* ---------- Tiles ---------- */
-
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 10px;
-}
-
-.tile {
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: var(--surface);
-}
-
-.tileValue {
-  font: 500 22px var(--font-mono), monospace;
-  color: var(--text);
-}
-
-.tileLabel {
-  margin-top: 4px;
-  font: 400 10.5px var(--font-mono), monospace;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-
-.tileNote {
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--text-dim);
-}
-
-/* ---------- Deck cards ---------- */
-
-.deckList {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-  gap: 12px;
-}
-
-.deckCard {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 18px;
-  border-radius: 14px;
-  border: 1px solid var(--line-soft);
-}
-
-.deckHead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.deckTitle {
-  min-width: 0;
-  font-weight: 600;
-  font-size: 16px;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.deckTitle:hover {
-  text-decoration: underline;
-}
-
-.deckMeta {
-  flex: none;
-  font: 400 12px var(--font-mono), monospace;
-  color: var(--text-muted);
-}
-
-.topicRows {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.topicRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 90px 38px;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--text-2);
-}
-
-.topicName {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.topicPct {
-  text-align: right;
-  font: 400 12px var(--font-mono), monospace;
-  color: var(--text-muted);
-}
-
-.deckFoot {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: auto;
 }
 
 .small {

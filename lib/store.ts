@@ -40,6 +40,8 @@ export interface StoreState {
 export interface Account {
   userId: string;
   email?: string;
+  /** From Google sign in; email-only accounts have none. */
+  name?: string;
   isGuest: boolean;
 }
 
@@ -162,7 +164,8 @@ export function loadStore(): Promise<void> {
         session = res.data.session;
       }
       const user = session!.user;
-      account = { userId: user.id, email: user.email || undefined, isGuest: !!user.is_anonymous };
+      const meta = user.user_metadata as { full_name?: string; name?: string } | undefined;
+      account = { userId: user.id, email: user.email || undefined, name: meta?.full_name || meta?.name || undefined, isGuest: !!user.is_anonymous };
       state = await fetchState();
       if (state.decks.length === 0 && (await importLocalData())) state = await fetchState();
     } catch (err) {

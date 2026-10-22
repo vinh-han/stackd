@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { State } from "ts-fsrs";
 import {
   cardTag,
@@ -15,16 +15,18 @@ import {
   type CardSort,
 } from "@/lib/deck-stats";
 import { plural } from "@/lib/format";
+import { addHref, deckHref, here, reviewHref } from "@/lib/links";
 import { isDue, topicStats } from "@/lib/scheduler";
+import { fold } from "@/lib/search";
 import { store, useStore } from "@/lib/store";
 import type { Deck, Source, StudyCard } from "@/lib/types";
 import { useIsDesktop, useNow } from "../ClientOnly";
 import { EditSheet, useCardEditor } from "../EditSheet";
-import { Rail } from "../Rail";
 import { Sheet } from "../Sheet";
 import { SourceSheet } from "../SourceSheet";
 import ui from "../ui.module.css";
 import pages from "../pages.module.css";
+import { DeckFrame, DeckNotFound } from "./DeckFrame";
 import d from "./deck.module.css";
 import styles from "./cards.module.css";
 
@@ -59,7 +61,17 @@ function statusLabel(card: StudyCard, now: Date): string {
 
 const confirmCount = (n: number) => (n === 1 ? "this card" : `these ${n} cards`);
 
-export function AllCards({ id }: { id: string }) {
+interface Props {
+  id: string;
+  /** Opened from search: show this card open and scroll to it. */
+  focusCardId?: string;
+  initialQuery?: string;
+  /** Opened from a search topic: jump to that topic's group. */
+  focusTopic?: string;
+  initialFilter?: CardFilter;
+}
+
+export function AllCards({ id, focusCardId, initialQuery, focusTopic, initialFilter }: Props) {
   const state = useStore();
   const tick = useNow();
   // A card reset or added since the last tick is due at once; comparing against the stale tick would hide it.
@@ -67,18 +79,20 @@ export function AllCards({ id }: { id: string }) {
   const router = useRouter();
   const desktop = useIsDesktop();
   const deck = state.decks.find((x) => x.id === id);
+  const [focusCard] = useState(() => state.cards.find((c) => c.id === focusCardId && c.deckId === id));
 
-  const [view, setView] = useState<View>(savedView);
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<CardFilter>("all");
+  // A card or topic from search opens in the Topics view, where cards open in place; the saved view is left alone.
+  const [view, setView] = useState<View>(() => (desktop && (focusCard || focusTopic) ? "topics" : savedView()));
+  const [query, setQuery] = useState(initialQuery ?? (desktop ? "" : (focusTopic ?? "")));
+  const [filter, setFilter] = useState<CardFilter>(initialFilter ?? "all");
   const [sort, setSort] = useState<CardSort>("hardest");
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   /** Grid and mobile: taps pick cards instead of flipping or opening them. Table always has checkboxes. */
   const [selecting, setSelecting] = useState(false);
   const [flipped, setFlipped] = useState<ReadonlySet<string>>(new Set());
-  const [inlineId, setInlineId] = useState<string | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
-  const [expandedTopics, setExpandedTopics] = useState<ReadonlySet<string>>(new Set());
+  const [inlineId, setInlineId] = useState<string | null>(desktop ? (focusCard?.id ?? null) : null);
+  const [openId, setOpenId] = useState<string | null>(desktop ? null : (focusCard?.id ?? null));
+  const [expandedTopics, setExpandedTopics] = useState<ReadonlySet<string>>(() => new Set(focusCard ? [focusCard.topic] : []));
   const [editing, setEditing] = useState<StudyCard | null>(null);
   const [viewing, setViewing] = useState<StudyCard | null>(null);
   const [moreFor, setMoreFor] = useState<StudyCard | null>(null);
@@ -91,10 +105,8 @@ export function AllCards({ id }: { id: string }) {
     return out;
   }, [deckCards, now]);
   const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const list = deckCards.filter(
-      (c) => matchesFilter(c, filter, now) && (!q || `${c.front} ${c.back} ${c.topic}`.toLowerCase().includes(q)),
-    );
+    const q = fold(query);
+    const list = deckCards.filter((c) => matchesFilter(c, filter, now) && (!q || fold(`${c.front} ${c.back} ${c.topic}`).includes(q)));
     return sortCards(list, sort);
   }, [deckCards, filter, query, sort, now]);
   const groups = useMemo(() => {
@@ -141,6 +153,16 @@ export function AllCards({ id }: { id: string }) {
     }
   };
 
+  // Opened from search: scroll the card, or the topic's group, into view once it is on screen.
+  useEffect(() => {
+    const el = focusCard
+      ? document.getElementById(`card-${focusCard.id}`)
+      : focusTopic
+        ? [...document.querySelectorAll<HTMLElement>("[data-topic]")].find((x) => x.dataset.topic === focusTopic)
+        : null;
+    el?.scrollIntoView({ block: focusCard ? "center" : "start" });
+  }, [focusCard, focusTopic]);
+
   const sheetOpen = !!(editing || viewing || moreFor || filterOpen);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -173,31 +195,18 @@ export function AllCards({ id }: { id: string }) {
       clearSelection();
     },
     onReset: () => reset(picked) && clearSelection(),
-    onReview: () => router.push(`/review?deck=${id}&cards=${picked.map((c) => c.id).join(",")}`),
+    onReview: () => router.push(reviewHref({ ids: picked.map((c) => c.id), from: here() })),
     onDelete: () => remove(picked) && clearSelection(),
     onClear: clearSelection,
   };
 
-  if (!deck) {
-    return (
-      <div className={ui.app}>
-        <main className={ui.main}>
-          <div className={pages.page}>
-            <h1 className={pages.h1}>Deck not found</h1>
-            <p className={pages.lede}>
-              It may have been deleted. <Link href="/" className={ui.textBtn}>Back to decks</Link>
-            </p>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  if (!deck) return <DeckNotFound />;
 
-  const reviewHref = `/review?deck=${id}`;
+  const reviewLink = reviewHref({ deck: id, from: deckHref(id, "cards") });
   const empty =
     deckCards.length === 0 ? (
       <p className={styles.empty}>
-        No cards yet. <Link href={`/add?deck=${id}`} className={ui.textBtn}>Add cards</Link>
+        No cards yet. <Link href={addHref(id)} className={ui.textBtn}>Add cards</Link>
       </p>
     ) : visible.length === 0 ? (
       <p className={styles.empty}>No cards match.</p>
@@ -205,11 +214,15 @@ export function AllCards({ id }: { id: string }) {
   const editingTopic = inlineId ? deckCards.find((c) => c.id === inlineId)?.topic : undefined;
 
   return (
-    <div className={ui.app} style={{ "--accent-h": deck.accentHue } as CSSProperties} data-accent>
-      <Rail state={state} now={now} activeDeckId={deck.id} showGoal={false}>
-        {desktop && view === "topics" && groups.length > 0 && (
-          <nav className={ui.railGroup} aria-label="Topics">
-            <div className={ui.railLabel}>JUMP TO TOPIC</div>
+    <DeckFrame
+      deck={deck}
+      tab="cards"
+      sidebarExtra={
+        desktop &&
+        view === "topics" &&
+        groups.length > 0 && (
+          <nav className={styles.jumpGroup} aria-label="Topics">
+            <div className={styles.jumpLabel}>JUMP TO TOPIC</div>
             {groups.map((g, i) => (
               <button
                 key={g.name}
@@ -222,21 +235,23 @@ export function AllCards({ id }: { id: string }) {
               </button>
             ))}
           </nav>
-        )}
-      </Rail>
-
-      <main className={ui.main}>
+        )
+      }
+    >
         {desktop ? (
           <>
-            <header className={d.topbar}>
-              <Link href={`/deck/${id}`} className={d.crumb}>
-                {deck.name}
-              </Link>
-              <span className={d.crumbSep}>/</span>
-              <span className={d.crumbHere}>All cards</span>
-              <span className={d.crumbCount}>{deckCards.length}</span>
-              <span className={pages.grow} />
-              <div className={styles.viewSwitch} role="tablist" aria-label="Layout">
+            <div className={styles.body}>
+              <div className={styles.toolbar}>
+                <input
+                  className={`${ui.input} ${styles.search}`}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search front, back or topic"
+                  aria-label="Search cards"
+                />
+                <FilterChips filter={filter} counts={counts} onPick={setFilter} />
+                <span className={pages.grow} />
+                <div className={styles.viewSwitch} role="tablist" aria-label="Layout">
                 {VIEWS.map((v) => (
                   <button
                     key={v.key}
@@ -250,24 +265,6 @@ export function AllCards({ id }: { id: string }) {
                   </button>
                 ))}
               </div>
-              {dueCount > 0 && (
-                <Link href={reviewHref} className={`${ui.primaryBtn} ${pages.small}`}>
-                  Review {dueCount}
-                </Link>
-              )}
-            </header>
-
-            <div className={styles.body}>
-              <div className={styles.toolbar}>
-                <input
-                  className={`${ui.input} ${styles.search}`}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search front, back or topic"
-                  aria-label="Search cards"
-                />
-                <FilterChips filter={filter} counts={counts} onPick={setFilter} />
-                <span className={pages.grow} />
                 <label className={styles.sort}>
                   Sort:
                   <select value={sort} onChange={(e) => setSort(e.target.value as CardSort)}>
@@ -384,7 +381,7 @@ export function AllCards({ id }: { id: string }) {
                     const shown = open ? g.cards : g.cards.filter((c, j) => j < TOPIC_PREVIEW || c.id === inlineId);
                     return (
                       <section key={g.name} className={styles.group}>
-                        <div id={`topic-${i}`} className={styles.groupHead}>
+                        <div id={`topic-${i}`} data-topic={g.name} className={styles.groupHead}>
                           <h2 className={styles.groupName}>{g.name}</h2>
                           <span className={styles.groupMeta}>
                             {plural(g.count, "card")} / {g.due} due
@@ -394,7 +391,7 @@ export function AllCards({ id }: { id: string }) {
                           </div>
                           <span className={styles.groupPct}>{g.mastery}%</span>
                           <span className={pages.grow} />
-                          <Link href={`/review?deck=${id}&topic=${encodeURIComponent(g.name)}`} className={ui.ghostBtn}>
+                          <Link href={reviewHref({ deck: id, topic: g.name, from: deckHref(id, "cards") })} className={ui.ghostBtn}>
                             Review this topic
                           </Link>
                         </div>
@@ -403,6 +400,7 @@ export function AllCards({ id }: { id: string }) {
                             c.id === inlineId ? (
                               <InlineEditor
                                 key={c.id}
+                                id={`card-${c.id}`}
                                 card={c}
                                 deck={deck}
                                 source={c.sourceId ? sourcesById.get(c.sourceId) : undefined}
@@ -448,30 +446,7 @@ export function AllCards({ id }: { id: string }) {
           </>
         ) : (
           <>
-            <header className={`${d.mHead} ${styles.mHead}`}>
-              <Link href={`/deck/${id}`} className={`${d.mBack} ${ui.tap}`}>
-                Back
-              </Link>
-              <span className={pages.grow} />
-              {deckCards.length > 0 && (
-                <button
-                  type="button"
-                  className={`${d.mBack} ${ui.tap} ${styles.mSelect}`}
-                  onClick={() => {
-                    setSelecting((s) => !s);
-                    setOpenId(null);
-                    clearSelection();
-                  }}
-                >
-                  {selecting ? "Done" : "Select"}
-                </button>
-              )}
-            </header>
             <div className={styles.mTop}>
-              <div className={styles.mTitleRow}>
-                <h1 className={`${pages.h1} ${styles.mTitle}`}>All cards</h1>
-                <span className={styles.mCount}>{deckCards.length}</span>
-              </div>
               <div className={styles.mSearchRow}>
                 <input
                   className={`${ui.input} ${styles.mSearch}`}
@@ -483,13 +458,26 @@ export function AllCards({ id }: { id: string }) {
                 <button type="button" className={styles.mFilterBtn} onClick={() => setFilterOpen(true)}>
                   {filter === "all" ? "Filter" : `${FILTERS.find((f) => f.key === filter)!.label} ${counts[filter]}`}
                 </button>
+                {deckCards.length > 0 && (
+                  <button
+                    type="button"
+                    className={`${d.mBack} ${ui.tap} ${styles.mSelect}`}
+                    onClick={() => {
+                      setSelecting((s) => !s);
+                      setOpenId(null);
+                      clearSelection();
+                    }}
+                  >
+                    {selecting ? "Done" : "Select"}
+                  </button>
+                )}
               </div>
             </div>
             <div className={styles.mList}>
               {empty}
               {visible.map((c) =>
                 !selecting && openId === c.id ? (
-                  <div key={c.id} className={styles.mOpen}>
+                  <div key={c.id} id={`card-${c.id}`} className={styles.mOpen}>
                     <button type="button" className={styles.mFront} style={{ textAlign: "left" }} lang={deck.lang} onClick={() => setOpenId(null)}>
                       {c.front}
                     </button>
@@ -537,7 +525,7 @@ export function AllCards({ id }: { id: string }) {
                 {picked.length > 0 ? (
                   <BulkBar {...bulk} dock />
                 ) : (
-                  <Link href={reviewHref} className={`${ui.primaryBtn} ${d.dockBtn}`} style={{ width: "100%" }}>
+                  <Link href={reviewLink} className={`${ui.primaryBtn} ${d.dockBtn}`} style={{ width: "100%" }}>
                     Review {dueCount} due
                   </Link>
                 )}
@@ -545,7 +533,6 @@ export function AllCards({ id }: { id: string }) {
             )}
           </>
         )}
-      </main>
 
       {editing && (
         <EditSheet
@@ -605,7 +592,7 @@ export function AllCards({ id }: { id: string }) {
           </div>
         </Sheet>
       )}
-    </div>
+    </DeckFrame>
   );
 }
 
@@ -751,6 +738,7 @@ function BulkBar({ count, allSuspended, onSuspend, onReset, onReview, onDelete, 
 }
 
 interface EditorProps {
+  id: string;
   card: StudyCard;
   deck: Deck;
   source?: Source;
@@ -762,7 +750,7 @@ interface EditorProps {
 }
 
 /** Topics view: the card opens in place, with the passage it came from beside it to check against. */
-function InlineEditor({ card, deck, source, onClose, onOpenSource, onSuspend, onReset, onDelete }: EditorProps) {
+function InlineEditor({ id, card, deck, source, onClose, onOpenSource, onSuspend, onReset, onDelete }: EditorProps) {
   const { front, setFront, back, setBack, canSave, submit, onKeyDown } = useCardEditor({
     card,
     onSave: (patch) => {
@@ -774,7 +762,7 @@ function InlineEditor({ card, deck, source, onClose, onOpenSource, onSuspend, on
   const { reps, lapses } = card.srs;
 
   return (
-    <form className={styles.editor} aria-label="Edit card" onSubmit={submit} onKeyDown={onKeyDown}>
+    <form id={id} className={styles.editor} aria-label="Edit card" onSubmit={submit} onKeyDown={onKeyDown}>
       <div className={styles.editorFields}>
         <label className={ui.field}>
           <span className={ui.fieldLabel}>FRONT</span>
