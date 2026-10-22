@@ -1,4 +1,4 @@
-/* Dashboard, Add cards and Deck pages. Same tokens and type as the review screen. */
+/* Dashboard, Add cards and Account pages. Same tokens and type as the review screen. */
 
 .scroll {
   flex: 1;
@@ -430,17 +430,6 @@
   gap: 6px;
 }
 
-.listHead {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.listHead .sectionLabel {
-  margin: 0;
-}
-
 .search {
   max-width: 240px;
   padding: 7px 10px;
@@ -471,9 +460,4 @@
   .heroTitle {
     font-size: 44px;
   }
-}
-
-.danger {
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
 }

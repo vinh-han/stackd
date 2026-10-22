@@ -20,6 +20,16 @@
   --track: oklch(0.23 0.014 265);
   --track-2: oklch(0.28 0.014 265);
   --fill: oklch(0.80 0.005 265);
+  --field: oklch(0.15 0.012 265);
+  --raised: oklch(0.27 0.014 265);
+  --border-strong: oklch(0.34 0.014 265);
+
+  /* Deck status bar and forecast. Neutral steps only: the accent stays on Good / Easy. */
+  --seg-due: oklch(0.88 0.005 265);
+  --seg-learning: oklch(0.64 0.012 265);
+  --seg-new: oklch(0.46 0.014 265);
+  --seg-known: oklch(0.32 0.014 265);
+  --seg-later: oklch(0.38 0.014 265);
 
   --text: oklch(0.96 0.005 265);
   --text-2: oklch(0.86 0.012 265);
@@ -51,6 +61,15 @@
     --track: oklch(0.91 0.006 265);
     --track-2: oklch(0.89 0.006 265);
     --fill: oklch(0.40 0.012 265);
+    --field: oklch(1 0 0);
+    --raised: oklch(1 0 0);
+    --border-strong: oklch(0.82 0.006 265);
+
+    --seg-due: oklch(0.30 0.012 265);
+    --seg-learning: oklch(0.52 0.012 265);
+    --seg-new: oklch(0.70 0.010 265);
+    --seg-known: oklch(0.88 0.006 265);
+    --seg-later: oklch(0.80 0.008 265);
 
     --text: oklch(0.20 0.012 265);
     --text-2: oklch(0.33 0.012 265);

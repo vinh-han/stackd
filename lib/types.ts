@@ -18,6 +18,8 @@ export interface StudyCard {
   /** Short verbatim excerpt of the chunk that supports the card. */
   sourceQuote?: string;
   srs: SrsState;
+  /** Suspended cards stay in the deck but never enter the review queue. */
+  suspended?: boolean;
   createdAt: Date;
 }
 

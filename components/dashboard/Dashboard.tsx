@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { dayKey, liveStreak } from "@/lib/streak";
 import { daysUntil, formatWhen, plural } from "@/lib/format";
 import { createSampleData } from "@/lib/sample-data";
-import { topicStats } from "@/lib/scheduler";
+import { isDue, topicStats } from "@/lib/scheduler";
 import { store, useAccount, useStore } from "@/lib/store";
 import type { Deck, StudyCard } from "@/lib/types";
 import { useNow } from "../ClientOnly";
@@ -29,9 +29,9 @@ export function Dashboard() {
     return map;
   }, [cards]);
 
-  const due = cards.filter((c) => c.srs.due <= now);
+  const due = cards.filter((c) => isDue(c, now));
   const firstDueDeck = decks.find((d) => due.some((c) => c.deckId === d.id));
-  const nextDue = cards.reduce<Date | null>((min, c) => (c.srs.due > now && (!min || c.srs.due < min) ? c.srs.due : min), null);
+  const nextDue = cards.reduce<Date | null>((min, c) => (!c.suspended && c.srs.due > now && (!min || c.srs.due < min) ? c.srs.due : min), null);
   const today = dayKey(now);
   const reviewedToday = reviewLogs.filter((l) => dayKey(l.at) === today).length;
   const live = liveStreak(streak, now);
@@ -151,7 +151,7 @@ export function Dashboard() {
 }
 
 function DeckCard({ deck, cards, now }: { deck: Deck; cards: StudyCard[]; now: Date }) {
-  const dueCount = cards.filter((c) => c.srs.due <= now).length;
+  const dueCount = cards.filter((c) => isDue(c, now)).length;
   const topics = useMemo(() => topicStats(cards).sort((a, b) => a.mastery - b.mastery), [cards]);
 
   return (

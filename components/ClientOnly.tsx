@@ -36,3 +36,17 @@ export function useNow(intervalMs = 60_000): Date {
   }, [intervalMs]);
   return now;
 }
+
+const DESKTOP = "(min-width: 900px)";
+
+/** Matches the 900px breakpoint in ui.module.css, for layouts too different to switch in CSS alone. */
+export function useIsDesktop(): boolean {
+  const [desktop, setDesktop] = useState(() => window.matchMedia(DESKTOP).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP);
+    const onChange = () => setDesktop(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return desktop;
+}

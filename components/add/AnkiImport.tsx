@@ -44,7 +44,7 @@ export function AnkiImport() {
       <h2 className={styles.sectionLabel}>OR IMPORT FROM ANKI</h2>
       <div className={styles.formFoot}>
         <label className={ui.outlineBtn} aria-disabled={status.kind === "busy"}>
-          {status.kind === "busy" ? "Importing…" : "Choose .apkg file"}
+          {status.kind === "busy" ? "Importing..." : "Choose .apkg file"}
           <input
             type="file"
             accept=".apkg"

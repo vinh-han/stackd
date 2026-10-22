@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { dayMonth, daysUntil, plural } from "@/lib/format";
+import { isDue } from "@/lib/scheduler";
 import { useAccount, type StoreState } from "@/lib/store";
 import ui from "./ui.module.css";
 
@@ -12,16 +13,19 @@ interface Props {
   activeDeckId?: string;
   /** Extra rail sections, rendered between the deck list and the goal card. */
   children?: React.ReactNode;
+  /** Off where the page itself shows the exam date. */
+  showGoal?: boolean;
 }
 
-export function Rail({ state, now, activeDeckId, children }: Props) {
+export function Rail({ state, now, activeDeckId, children, showGoal = true }: Props) {
   const { decks, cards } = state;
   const account = useAccount();
   const dueCounts = useMemo(() => {
     // Cards created after the last clock tick are due "now" too, so never compare against a stale time.
     const at = Math.max(now.getTime(), Date.now());
     const counts: Record<string, number> = {};
-    for (const c of cards) if (c.srs.due.getTime() <= at) counts[c.deckId] = (counts[c.deckId] ?? 0) + 1;
+    const when = new Date(at);
+    for (const c of cards) if (isDue(c, when)) counts[c.deckId] = (counts[c.deckId] ?? 0) + 1;
     return counts;
   }, [cards, now]);
 
@@ -58,28 +62,30 @@ export function Rail({ state, now, activeDeckId, children }: Props) {
         </Link>
       </nav>
       {children}
-      {account && !account.isGuest ? (
-        <Link href="/account" className={ui.railAdd}>
-          {account.email}
-        </Link>
-      ) : (
-        <div className={ui.railGroup}>
+      <div className={ui.railFoot}>
+        {account && !account.isGuest ? (
           <Link href="/account" className={ui.railAdd}>
-            Create account
+            {account.email}
           </Link>
-          <Link href="/account?mode=signin" className={ui.railAdd}>
-            Sign in
-          </Link>
-        </div>
-      )}
-      {goal?.examDate && (
-        <div className={ui.goal}>
-          <div className={ui.goalDays}>{plural(daysUntil(goal.examDate, now), "day")} left</div>
-          <div className={ui.goalDate}>
-            {goal.id === activeDeckId ? "Exam" : goal.name} on {dayMonth.format(goal.examDate)}
+        ) : (
+          <div className={ui.railGroup}>
+            <Link href="/account" className={ui.railAdd}>
+              Create account
+            </Link>
+            <Link href="/account?mode=signin" className={ui.railAdd}>
+              Sign in
+            </Link>
           </div>
-        </div>
-      )}
+        )}
+        {showGoal && goal?.examDate && (
+          <div className={ui.goal}>
+            <div className={ui.goalDays}>{plural(daysUntil(goal.examDate, now), "day")} left</div>
+            <div className={ui.goalDate}>
+              {goal.id === activeDeckId ? "Exam" : goal.name} on {dayMonth.format(goal.examDate)}
+            </div>
+          </div>
+        )}
+      </div>
     </aside>
   );
 }

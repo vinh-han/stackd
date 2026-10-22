@@ -11,6 +11,14 @@ export const GRADES = [
   { grade: Rating.Easy, label: "Easy", key: "4" },
 ] as const satisfies readonly { grade: Grade; label: string; key: string }[];
 
+/** A card forgotten this many times after being learned is a leech: it likely needs a rewrite, not more reviews. */
+export const LEECH_LAPSES = 4;
+
+export const isLeech = (card: StudyCard) => card.srs.lapses >= LEECH_LAPSES;
+
+/** In the review queue now. Suspended cards never are. */
+export const isDue = (card: StudyCard, now: Date) => !card.suspended && card.srs.due <= now;
+
 /** Cards due again within this window come back later in the same session. */
 export const RELEARN_WINDOW_MS = 20 * 60 * 1000;
 

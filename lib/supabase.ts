@@ -10,3 +10,11 @@ if (!url || !key) {
 }
 
 export const supabase = createClient(url, key);
+
+/** Whether an OAuth provider is switched on in Supabase Auth (supabase/config.toml locally, the dashboard in production). */
+export async function oauthEnabled(provider: "google"): Promise<boolean> {
+  const res = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: key! } });
+  if (!res.ok) return false;
+  const settings = (await res.json()) as { external?: Record<string, boolean> };
+  return !!settings.external?.[provider];
+}

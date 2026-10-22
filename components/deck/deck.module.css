@@ -1,0 +1,605 @@
+/* Deck overview (design turn 2) and the top bar shared with All cards (turn 3). */
+
+/* ---------- Top bar ---------- */
+
+.topbar {
+  height: 60px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.crumb {
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+a.crumb:hover {
+  color: var(--text);
+}
+
+.crumbSep {
+  font-size: 13px;
+  color: var(--text-ghost);
+}
+
+.crumbHere {
+  min-width: 0;
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crumbCount {
+  font: 400 12px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+/* Mobile header: back link on the left, one action on the right. */
+.mHead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: calc(6px + env(safe-area-inset-top)) 16px 10px;
+}
+
+/* Pair with ui.tap: the link looks like text but takes a 44px tap. */
+.mBack {
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+
+.mHeadChip {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+/* ---------- Layout ---------- */
+
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 8px 18px 24px;
+}
+
+@media (min-width: 900px) {
+  .overview {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 290px;
+    align-items: start;
+    gap: 36px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 34px 40px 48px;
+  }
+}
+
+/* Narrow desktops: the side column would squeeze topic names out, so it moves below. */
+@media (min-width: 900px) and (max-width: 1179.98px) {
+  .overview {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 760px;
+  }
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .mainCol {
+    gap: 30px;
+  }
+}
+
+.title {
+  font-size: 27px;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 900px) {
+  .title {
+    font-size: 34px;
+  }
+}
+
+.meta {
+  margin-top: 6px;
+  font: 400 10.5px var(--font-mono), monospace;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+
+@media (min-width: 900px) {
+  .meta {
+    margin-top: 8px;
+    font-size: 11px;
+  }
+}
+
+/* ---------- Due card ---------- */
+
+.dueCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+@media (min-width: 900px) {
+  .dueCard {
+    gap: 20px;
+    padding: 22px;
+  }
+}
+
+.dueTop {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dueTitle {
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.dueSub {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+@media (min-width: 900px) {
+  .dueTitle {
+    font-size: 26px;
+  }
+
+  .dueSub {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+}
+
+.dueActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reviewBtn {
+  gap: 10px;
+  padding: 13px 22px;
+  font-size: 15px;
+}
+
+.browseBtn {
+  padding: 12px 18px;
+  border-color: var(--border-strong);
+  color: var(--text-2);
+}
+
+/* ---------- Status bar ---------- */
+
+.stack {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--track);
+}
+
+@media (min-width: 900px) {
+  .stack {
+    height: 10px;
+    border-radius: 5px;
+  }
+}
+
+.seg_due {
+  background: var(--seg-due);
+}
+
+.seg_learning {
+  background: var(--seg-learning);
+}
+
+.seg_new {
+  background: var(--seg-new);
+}
+
+.seg_known {
+  background: var(--seg-known);
+}
+
+.legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+@media (min-width: 900px) {
+  .legend {
+    display: flex;
+    gap: 26px;
+    font-size: 12.5px;
+  }
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.swatch {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.legendNum {
+  margin-left: auto;
+  font: 500 12px var(--font-mono), monospace;
+  color: var(--text);
+}
+
+@media (min-width: 900px) {
+  .legendNum {
+    margin-left: 0;
+  }
+}
+
+/* ---------- Topics ---------- */
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+@media (min-width: 900px) {
+  .sectionHead {
+    margin-bottom: 10px;
+  }
+}
+
+.label {
+  margin: 0;
+  font: 400 10.5px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+
+.hint {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.topicList {
+  display: flex;
+  flex-direction: column;
+}
+
+.topicRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 70px 40px;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.topicRow:last-child {
+  border-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  .topicRow,
+  .topicRow:last-child {
+    grid-template-columns: minmax(0, 1fr) 60px 140px 44px 90px;
+    gap: 14px;
+    min-height: 0;
+    padding: 11px 12px;
+    border-bottom: 0;
+    border-radius: 10px;
+    transition: background-color 80ms;
+  }
+
+  .topicRow:hover,
+  .topicWeak {
+    background: var(--surface);
+  }
+}
+
+.topicName {
+  min-width: 0;
+  font-size: 14px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topicWeak .topicName {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.topicDue {
+  margin-left: 4px;
+  font: 400 11.5px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+.topicCount {
+  font: 400 12px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+.topicPct {
+  text-align: right;
+  font: 400 12px var(--font-mono), monospace;
+  color: var(--text-2);
+}
+
+.topicAction {
+  text-align: right;
+  font-weight: 500;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.topicWeak .topicAction {
+  color: var(--text);
+}
+
+.topicIdle {
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
+/* ---------- Side column ---------- */
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.box {
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 110px;
+  margin-top: 14px;
+}
+
+.barCol {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.barNum {
+  font: 400 10.5px var(--font-mono), monospace;
+  color: var(--text-muted);
+}
+
+.barCol > div {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 4px;
+  background: var(--seg-later);
+}
+
+.barToday .barNum {
+  color: var(--text-2);
+}
+
+.barToday > div {
+  background: var(--seg-due);
+}
+
+.days {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  font: 400 10px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+.days span {
+  flex: 1;
+  text-align: center;
+}
+
+.days .dayToday {
+  color: var(--text-2);
+}
+
+.exam {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.examMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.examDays {
+  font: 500 17px var(--font-mono), monospace;
+  color: var(--text);
+}
+
+.examDate {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.sideBtn {
+  padding: 0;
+  font-size: 12.5px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+@media (min-width: 900px) {
+  .infoRow {
+    min-height: 0;
+    padding: 12px 0;
+  }
+}
+
+.infoRow + .infoLabel {
+  border-top: 1px solid var(--line);
+}
+
+.infoValue {
+  color: var(--text);
+}
+
+.infoValue:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.langInput {
+  width: 120px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.infoLabel {
+  padding: 12px 0 4px;
+  font: 400 10.5px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+
+.sourceRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.sourceRow:last-child {
+  padding-bottom: 12px;
+}
+
+.sourceName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sourceCount {
+  font: 400 11.5px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+.deleteBtn {
+  align-self: flex-start;
+  padding: 4px 2px;
+  font-size: 12.5px;
+}
+
+/* ---------- Mobile dock ---------- */
+
+.dock {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px calc(8px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+}
+
+.dockBtn {
+  height: 52px;
+  border-radius: 16px;
+  font-size: 16px;
+}
+
+.dockLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* ---------- Settings sheet (mobile) ---------- */
+
+.sheetActions {
+  display: flex;
+  gap: 8px;
+}
+
+.sheetActions > * {
+  flex: 1;
+  min-height: 44px;
+}

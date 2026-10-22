@@ -14,6 +14,23 @@
   flex-direction: column;
 }
 
+/* Grows the hit area to 44px on touch screens without changing how the control looks. */
+.tap {
+  position: relative;
+}
+
+@media (max-width: 899.98px) {
+  .tap::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
 @media (min-width: 900px) {
   .mobileOnly {
     display: none !important;
@@ -137,8 +154,14 @@
   color: var(--text-muted);
 }
 
-.goal {
+.railFoot {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.goal {
   padding: 14px;
   border-radius: 11px;
   background: var(--surface);
@@ -249,6 +272,20 @@
 
 .dangerText {
   color: oklch(0.70 0.13 25);
+}
+
+.kbd {
+  padding: 2px 5px;
+  border: 1px solid var(--kbd-border);
+  border-radius: 5px;
+  font: 400 10.5px var(--font-mono), monospace;
+  color: var(--kbd-fg);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .kbd {
+    display: none;
+  }
 }
 
 /* ---------- Fields ---------- */

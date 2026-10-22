@@ -19,7 +19,7 @@ import {
 } from "./rows";
 import { rate } from "./scheduler";
 import { EMPTY_STREAK, recordStudy } from "./streak";
-import { supabase } from "./supabase";
+import { oauthEnabled, supabase } from "./supabase";
 import type { Deck, ReviewLog, Source, StudyCard, Streak } from "./types";
 
 /*
@@ -47,6 +47,7 @@ const EMPTY: StoreState = { decks: [], cards: [], sources: [], reviewLogs: [], s
 const ACCENT_HUES = [190, 300, 25, 140, 260, 60, 340, 100];
 const PAGE = 1000; // Supabase returns at most 1,000 rows per request
 const INSERT_BATCH = 500;
+const ID_BATCH = 100;
 
 let state: StoreState = EMPTY;
 let account: Account | null = null;
@@ -84,6 +85,14 @@ function insertAll(table: string, rows: object[]) {
   for (let i = 0; i < rows.length; i += INSERT_BATCH) {
     const batch = rows.slice(i, i + INSERT_BATCH);
     persist(() => supabase.from(table).insert(batch));
+  }
+}
+
+/** Ids go in the request URL, so long lists are split to stay under URL length limits. */
+function forIdBatches(ids: string[], write: (batch: string[]) => PromiseLike<{ error: unknown }>) {
+  for (let i = 0; i < ids.length; i += ID_BATCH) {
+    const batch = ids.slice(i, i + ID_BATCH);
+    persist(() => write(batch));
   }
 }
 
@@ -216,6 +225,34 @@ export const auth = {
     window.location.assign("/");
   },
 
+  /**
+   * Leaves for Google and comes back to /account. A guest signing up links Google to the guest account (same user id,
+   * cards stay); signing in switches to the account that owns that Google identity.
+   */
+  async google(intent: "signUp" | "signIn"): Promise<void> {
+    // Otherwise a provider that is off ends on Supabase's raw JSON error page.
+    if (!(await oauthEnabled("google"))) throw new Error("Google sign in is not set up on this server yet. Use email for now.");
+    const redirectTo = `${window.location.origin}/account?mode=${intent === "signUp" ? "signup" : "signin"}&via=google`;
+    const { error } =
+      intent === "signUp" && account?.isGuest
+        ? await supabase.auth.linkIdentity({ provider: "google", options: { redirectTo } })
+        : await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
+    if (error) throw error;
+  },
+
+  /** Emails a link that signs in and opens /account?mode=reset to choose a new password. */
+  async sendPasswordReset(email: string): Promise<void> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/account?mode=reset`,
+    });
+    if (error) throw error;
+  },
+
+  async setPassword(password: string): Promise<void> {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+  },
+
   async signOut(): Promise<void> {
     await supabase.auth.signOut();
     window.location.assign("/"); // the next load starts a fresh guest account
@@ -283,6 +320,28 @@ export const store = {
   deleteCard(id: string) {
     setState((s) => ({ ...s, cards: s.cards.filter((c) => c.id !== id) }));
     persist(() => supabase.from("cards").delete().eq("id", id));
+  },
+
+  deleteCards(ids: string[]) {
+    const drop = new Set(ids);
+    setState((s) => ({ ...s, cards: s.cards.filter((c) => !drop.has(c.id)) }));
+    forIdBatches(ids, (batch) => supabase.from("cards").delete().in("id", batch));
+  },
+
+  setSuspended(ids: string[], suspended: boolean) {
+    const hit = new Set(ids);
+    setState((s) => ({ ...s, cards: s.cards.map((c) => (hit.has(c.id) ? { ...c, suspended: suspended || undefined } : c)) }));
+    forIdBatches(ids, (batch) => supabase.from("cards").update({ suspended }).in("id", batch));
+  },
+
+  /** Forgets all progress: the cards start over as new and are due now. */
+  resetProgress(ids: string[]) {
+    const srs = createEmptyCard<SrsState>(new Date());
+    const hit = new Set(ids);
+    setState((s) => ({ ...s, cards: s.cards.map((c) => (hit.has(c.id) ? { ...c, srs } : c)) }));
+    forIdBatches(ids, (batch) =>
+      supabase.from("cards").update({ srs: srsToJson(srs), due: srs.due.toISOString() }).in("id", batch),
+    );
   },
 
   restoreCard(card: StudyCard) {

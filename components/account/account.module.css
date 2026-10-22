@@ -1,0 +1,549 @@
+/* Sign up and sign in (design turn 1): form on the left, the product on the right. No rail while logged out. */
+
+.auth {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+@media (min-width: 900px) {
+  .auth {
+    flex-direction: row;
+    height: 100dvh;
+    min-height: 0;
+  }
+}
+
+/* ---------- Form column ---------- */
+
+.formCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 900px) {
+  .formCol {
+    flex: none;
+    width: clamp(440px, 44vw, 560px);
+    padding: 32px clamp(32px, 4.4vw, 56px);
+    overflow-y: auto;
+  }
+}
+
+.form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 20px 0;
+}
+
+@media (min-width: 900px) {
+  .form {
+    justify-content: center;
+    gap: 22px;
+    max-width: 380px;
+    padding: 24px 0;
+  }
+}
+
+.formMain {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 900px) {
+  .formMain {
+    gap: 22px;
+  }
+}
+
+.formFoot {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+  padding: 12px 0 calc(26px + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 900px) {
+  .formFoot {
+    gap: 22px;
+    margin-top: 0;
+    padding: 0;
+  }
+}
+
+.h1 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.lede {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  text-wrap: pretty;
+}
+
+@media (min-width: 900px) {
+  .h1 {
+    font-size: 36px;
+    line-height: 1.15;
+  }
+
+  .lede {
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+}
+
+.google {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font-weight: 500;
+  font-size: 14.5px;
+  color: var(--text);
+}
+
+.google:hover:not(:disabled) {
+  background: var(--surface);
+}
+
+.google:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.g {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--primary-bg);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--primary-fg);
+}
+
+.or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 400 11px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+.or::before,
+.or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--divider);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 900px) {
+  .fields {
+    gap: 14px;
+  }
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+/* Phones show placeholders only, as in the design; the label stays for screen readers. */
+@media (max-width: 899.98px) {
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .labelRow {
+    justify-content: flex-end;
+  }
+
+  /* Without a Forgot link the row would be empty, but still take a gap above the input. */
+  .labelRow:not(:has(button)) {
+    display: contents;
+  }
+}
+
+.forgot {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.forgot:hover {
+  color: var(--text);
+}
+
+.input {
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 11px;
+  background: var(--field);
+}
+
+@media (min-width: 900px) {
+  .input {
+    height: 46px;
+  }
+}
+
+.submit {
+  height: 50px;
+  gap: 10px;
+  border-radius: 14px;
+  font-size: 15.5px;
+}
+
+@media (min-width: 900px) {
+  .submit {
+    height: 48px;
+    border-radius: 12px;
+    font-size: 15px;
+  }
+}
+
+.switch {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+@media (min-width: 900px) {
+  .switch {
+    text-align: left;
+    font-size: 13.5px;
+  }
+}
+
+.switchLink {
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.message {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.messageError {
+  color: oklch(0.70 0.13 25);
+}
+
+.note {
+  max-width: 380px;
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+/* ---------- Product panel ---------- */
+
+.panel {
+  flex: 1;
+  min-width: 0;
+  margin: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  padding: 48px;
+  border-radius: 20px;
+  background: var(--rail);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.panelTight {
+  gap: 28px;
+}
+
+.mPanel {
+  flex: none;
+  height: 250px;
+  margin: calc(12px + env(safe-area-inset-top)) 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  background: var(--rail);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.paste {
+  width: min(460px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.monoLabel {
+  font: 400 10.5px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
+}
+
+.pasteBox {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+}
+
+/* Clamped inside the padded box, so a fourth line never peeks out under the padding. */
+.pasteText {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+/* Fanned stack: two cards peeking out behind the top one. */
+.fan {
+  position: relative;
+  flex: none;
+  width: min(460px, 100%);
+  height: 300px;
+}
+
+.fanSmall {
+  width: 270px;
+  height: 170px;
+}
+
+.fanCard {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+}
+
+.fanSmall .fanCard {
+  border-radius: 16px;
+}
+
+.fan1 {
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  transform: translate(26px, 22px) rotate(4deg);
+}
+
+.fan2 {
+  background: var(--surface-2);
+  border: 1px solid var(--track-2);
+  transform: translate(-18px, 12px) rotate(-3deg);
+}
+
+.fanSmall .fan1 {
+  transform: translate(16px, 14px) rotate(4deg);
+}
+
+.fanSmall .fan2 {
+  transform: translate(-12px, 8px) rotate(-3deg);
+}
+
+.fanTop {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  background: var(--btn);
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 40px oklch(0.08 0.01 265 / 0.5);
+}
+
+.fanSmall .fanTop {
+  gap: 10px;
+  padding: 16px;
+  box-shadow: 0 14px 30px oklch(0.08 0.01 265 / 0.5);
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: 400 10px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+.fanSmall .cardHead {
+  font-size: 9px;
+}
+
+.cardKind {
+  min-width: 0;
+  letter-spacing: 0.14em;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardFront {
+  margin: 0;
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--text);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  overflow: hidden;
+}
+
+.fanSmall .cardFront {
+  font-size: 13.5px;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.cardFoot {
+  margin-top: auto;
+  font: 400 10px var(--font-mono), monospace;
+  color: var(--text-faint);
+}
+
+.grades {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.grade {
+  flex: 1;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 11px;
+  background: var(--raised);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.grade span {
+  font: 400 11px var(--font-mono), monospace;
+  color: var(--text-dim);
+}
+
+.gradeGood {
+  background: var(--good-bg);
+  color: var(--good-fg);
+}
+
+.gradeGood span {
+  color: var(--good-sub);
+}
+
+.caption {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Sign in: one card mid-review. */
+.demo {
+  width: min(480px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 26px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--track-2);
+  box-shadow: 0 18px 40px oklch(0.08 0.01 265 / 0.5);
+}
+
+.demoWord {
+  font-size: 36px;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.demoRule {
+  height: 1px;
+  background: var(--raised);
+}
+
+.demoMeaning {
+  margin: 0;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+.demo .grades {
+  margin-top: 6px;
+}
+
+.demo .grade {
+  height: 44px;
+}
+
+.stats {
+  display: flex;
+  gap: 28px;
+}
+
+.statValue {
+  font: 500 22px var(--font-mono), monospace;
+  color: var(--text);
+}
+
+.statLabel {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Small demo card for the phone layout's top panel when there are no guest cards to show. */
+.demoSmallWord {
+  font-size: 22px;
+  color: var(--text);
+}

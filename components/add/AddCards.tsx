@@ -142,7 +142,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
           <div className={styles.page}>
             <div className={styles.topbar}>
               <Link href="/" className={styles.topbarBack}>
-                &lsaquo; Back
+                Back
               </Link>
             </div>
 
@@ -173,7 +173,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                             {d.name}
                           </option>
                         ))}
-                        <option value={NEW}>New deck…</option>
+                        <option value={NEW}>New deck...</option>
                       </select>
                     </label>
                     {deckChoice === NEW ? (
@@ -232,7 +232,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                       <span className={styles.dropTitle}>{file ? file.name : "Drop a file here, or click to choose"}</span>
                       <span className={fileTooBig ? styles.counterOver : styles.muted}>
                         {file
-                          ? `${file.size < 1024 * 1024 ? `${Math.ceil(file.size / 1024)} KB` : `${(file.size / 1024 / 1024).toFixed(1)} MB`}${fileTooBig ? " · over the 20 MB limit" : ""}`
+                          ? `${file.size < 1024 * 1024 ? `${Math.ceil(file.size / 1024)} KB` : `${(file.size / 1024 / 1024).toFixed(1)} MB`}${fileTooBig ? ", over the 20 MB limit" : ""}`
                           : "PDF, Word (.docx), PowerPoint (.pptx) or image. Up to 20 MB and 100 pages."}
                       </span>
                     </label>
@@ -244,7 +244,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                       value={text}
                       onChange={(e) => setText(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && (e.metaKey || e.ctrlKey) && generate()}
-                      placeholder="Paste here…"
+                      placeholder="Paste here..."
                       disabled={phase.kind === "running"}
                       autoFocus
                     />
@@ -263,7 +263,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                           : phase.done < phase.total
                             ? `Reading section ${Math.min(phase.done + 1, phase.total)} of ${phase.total}`
                             : "Saving"}
-                        {phase.cards > 0 && ` · ${plural(phase.cards, "card")} so far`}
+                        {phase.cards > 0 && `, ${plural(phase.cards, "card")} so far`}
                       </div>
                       <div className={styles.progressTrack}>
                         <div className={styles.progressFill} style={{ width: `${progressPct(phase)}%` }} />
@@ -292,7 +292,7 @@ export function AddCards({ initialDeckId }: { initialDeckId?: string }) {
                     <div className={`${styles.notice} ${styles.noticeError}`} role="alert">
                       {phase.missingKey ? (
                         <>
-                          Card generation needs a Gemini API key. Add <code>GEMINI_API_KEY=…</code> to <code>.env.local</code> in the
+                          Card generation needs a Gemini API key. Add <code>GEMINI_API_KEY=...</code> to <code>.env.local</code> in the
                           project root and restart the backend. You can still write cards by hand below.
                         </>
                       ) : (

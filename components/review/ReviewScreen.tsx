@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { Grade } from "ts-fsrs";
 import { formatWhen, daysUntil, plural, startOfDay } from "@/lib/format";
-import { GRADES, RELEARN_WINDOW_MS, previewIntervals, topicStats, type TopicStat } from "@/lib/scheduler";
+import { GRADES, RELEARN_WINDOW_MS, isDue, previewIntervals, topicStats, type TopicStat } from "@/lib/scheduler";
 import { store, useStore } from "@/lib/store";
 import type { Deck, StudyCard } from "@/lib/types";
 import { EditSheet } from "../EditSheet";
@@ -25,21 +25,37 @@ interface Session {
   startedAt: number;
 }
 
-function cardsDue(cards: StudyCard[], deckId: string, now: Date): string[] {
+/** Narrows a session: one topic's due cards, or exactly the picked cards, due or not (from All cards). */
+export interface ReviewScope {
+  topic?: string;
+  cardIds?: string[];
+}
+
+function cardsDue(cards: StudyCard[], deckId: string, now: Date, scope: ReviewScope): string[] {
+  if (scope.cardIds) {
+    const byId = new Map(cards.map((c) => [c.id, c]));
+    return scope.cardIds.filter((id) => {
+      const c = byId.get(id);
+      return c && c.deckId === deckId && !c.suspended;
+    });
+  }
   return cards
-    .filter((c) => c.deckId === deckId && c.srs.due <= now)
+    .filter((c) => c.deckId === deckId && isDue(c, now) && (!scope.topic || c.topic === scope.topic))
     .sort((a, b) => a.srs.due.getTime() - b.srs.due.getTime())
     .map((c) => c.id);
 }
 
 /** Cards due within the next week, skipping any already reviewed today. */
-function cardsAhead(cards: StudyCard[], deckId: string, now: Date): string[] {
+function cardsAhead(cards: StudyCard[], deckId: string, now: Date, scope: ReviewScope): string[] {
+  if (scope.cardIds) return [];
   const limit = now.getTime() + AHEAD_WINDOW_MS;
   const today = startOfDay(now);
   return cards
     .filter(
       (c) =>
         c.deckId === deckId &&
+        !c.suspended &&
+        (!scope.topic || c.topic === scope.topic) &&
         c.srs.due > now &&
         c.srs.due.getTime() <= limit &&
         (!c.srs.last_review || c.srs.last_review.getTime() < today),
@@ -48,17 +64,17 @@ function cardsAhead(cards: StudyCard[], deckId: string, now: Date): string[] {
     .map((c) => c.id);
 }
 
-function newSession(cards: StudyCard[], deckId: string, now: Date, ahead = false): Session {
-  const queue = ahead ? cardsAhead(cards, deckId, now) : cardsDue(cards, deckId, now);
+function newSession(cards: StudyCard[], deckId: string, now: Date, scope: ReviewScope, ahead = false): Session {
+  const queue = ahead ? cardsAhead(cards, deckId, now, scope) : cardsDue(cards, deckId, now, scope);
   return { queue, total: queue.length, done: 0, reviewed: 0, startedAt: now.getTime() };
 }
 
-export function ReviewScreen({ deck }: { deck: Deck }) {
+export function ReviewScreen({ deck, scope = {} }: { deck: Deck; scope?: ReviewScope }) {
   const state = useStore();
   const { cards } = state;
 
   const [now, setNow] = useState(() => new Date());
-  const [session, setSession] = useState<Session>(() => newSession(cards, deck.id, now));
+  const [session, setSession] = useState<Session>(() => newSession(cards, deck.id, now, scope));
   const [flipped, setFlipped] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [sheet, setSheet] = useState<"edit" | "source" | null>(null);
@@ -124,7 +140,7 @@ export function ReviewScreen({ deck }: { deck: Deck }) {
   const reviewAhead = () => {
     const t = new Date();
     setNow(t);
-    setSession(newSession(cards, deck.id, t, true));
+    setSession(newSession(cards, deck.id, t, scope, true));
     resetCard();
   };
 
@@ -190,10 +206,7 @@ export function ReviewScreen({ deck }: { deck: Deck }) {
       <main className={ui.main}>
         <header className={styles.header}>
           <Link href="/" className={styles.back} aria-label="Back">
-            <span className={ui.mobileOnly} aria-hidden>
-              &lsaquo;
-            </span>
-            <span className={ui.desktopOnly}>Back</span>
+            Back
           </Link>
           <div className={styles.titleBlock}>
             <Link href={`/deck/${deck.id}`} className={styles.title}>
@@ -316,7 +329,7 @@ export function ReviewScreen({ deck }: { deck: Deck }) {
             cards={deckCards}
             topics={topics}
             focusTopic={lastTopic}
-            aheadCount={cardsAhead(cards, deck.id, now).length}
+            aheadCount={cardsAhead(cards, deck.id, now, scope).length}
             onReviewAhead={reviewAhead}
           />
         )}
@@ -361,7 +374,7 @@ interface QueueClearProps {
 
 function QueueClear({ deck, session, now, cards, topics, focusTopic, aheadCount, onReviewAhead }: QueueClearProps) {
   const minutes = Math.max(1, Math.round((now.getTime() - session.startedAt) / 60000));
-  const next = cards.reduce<Date | null>((min, c) => (!min || c.srs.due < min ? c.srs.due : min), null);
+  const next = cards.reduce<Date | null>((min, c) => (!c.suspended && (!min || c.srs.due < min) ? c.srs.due : min), null);
 
   const summary = [
     session.reviewed > 0 ? `${plural(session.reviewed, "card")} reviewed in ${plural(minutes, "minute")}.` : "Nothing due right now.",

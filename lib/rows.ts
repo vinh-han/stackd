@@ -38,6 +38,7 @@ export interface CardRow {
   source_quote: string | null;
   srs: SrsJson;
   due: string;
+  suspended: boolean;
   created_at: string;
 }
 
@@ -124,6 +125,7 @@ export const cardToRow = (c: StudyCard): CardRow => ({
   source_quote: c.sourceQuote ?? null,
   srs: srsToJson(c.srs),
   due: c.srs.due.toISOString(),
+  suspended: c.suspended ?? false,
   created_at: c.createdAt.toISOString(),
 });
 
@@ -140,6 +142,7 @@ export const cardFromRow = (r: CardRow): StudyCard => ({
   chunkIndex: r.chunk_index ?? undefined,
   sourceQuote: r.source_quote ?? undefined,
   srs: srsFromJson(r.srs),
+  suspended: r.suspended || undefined,
   createdAt: new Date(r.created_at),
 });
 
